@@ -1,0 +1,95 @@
+<template>
+    <lightning-card title="Restaurant Snapshot" icon-name="custom:custom67">
+        <button class="slds-button slds-button_icon slds-button_icon-border" slot="actions" title="Refresh" onclick={handleRefresh}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+
+        <template lwc:if={isLoading}>
+            <div class="slds-p-around_large slds-align_absolute-center">
+                <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:elseif={hasError}>
+            <div class="slds-p-around_medium slds-text-color_error">Failed to load snapshot.</div>
+        </template>
+
+        <template lwc:else>
+            <div class="snapshot-grid">
+                <!-- Tables Section -->
+                <div class="snapshot-section">
+                    <h3 class="section-title">Tables</h3>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-value">{totalTables}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat-item stat-available">
+                            <span class="stat-value">{availableTables}</span>
+                            <span class="stat-label">Available</span>
+                        </div>
+                        <div class="stat-item stat-occupied">
+                            <span class="stat-value">{occupiedTables}</span>
+                            <span class="stat-label">Occupied</span>
+                        </div>
+                        <div class="stat-item stat-reserved">
+                            <span class="stat-value">{reservedTables}</span>
+                            <span class="stat-label">Reserved</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Menu Section -->
+                <div class="snapshot-section">
+                    <h3 class="section-title">Menu</h3>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-value">{totalCategories}</span>
+                            <span class="stat-label">Categories</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{totalMenuItems}</span>
+                            <span class="stat-label">Items Available</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Orders Section -->
+                <div class="snapshot-section">
+                    <h3 class="section-title">Active Orders</h3>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-value stat-highlight">{activeOrders}</span>
+                            <span class="stat-label">Open Orders</span>
+                        </div>
+                        <template lwc:if={hasActiveOrders}>
+                            <div class="stat-item">
+                                <span class="stat-value">{activeOrdersTotal}</span>
+                                <span class="stat-label">Running Total</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Today's Stats -->
+                <div class="snapshot-section">
+                    <h3 class="section-title">Today</h3>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-value">{todayOrders}</span>
+                            <span class="stat-label">Orders Completed</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value stat-revenue">{todayRevenue}</span>
+                            <span class="stat-label">Revenue</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{totalOrders}</span>
+                            <span class="stat-label">All Time Orders</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </lightning-card>
+</template>
