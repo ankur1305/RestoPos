@@ -1,0 +1,42 @@
+<template>
+    <div class="customer-input">
+        <div class="input-row">
+            <div class="phone-field">
+                <label class="field-label">Customer Phone</label>
+                <input
+                    class="field-input"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    value={phone}
+                    oninput={handlePhoneChange}
+                    maxlength="15"
+                />
+            </div>
+
+            <template lwc:if={isSearching}>
+                <div class="search-status">Searching...</div>
+            </template>
+
+            <template lwc:if={hasCustomer}>
+                <div class="customer-found">
+                    <div class="customer-name">{customer.Name}</div>
+                    <div class="customer-visits">{visitInfo}</div>
+                </div>
+            </template>
+
+            <template lwc:if={showNewForm}>
+                <div class="new-customer">
+                    <input
+                        class="field-input name-input"
+                        type="text"
+                        placeholder="Customer name"
+                        value={customerName}
+                        oninput={handleNameChange}
+                    />
+                    <button class="save-btn" onclick={handleCreateCustomer} disabled={isCreateDisabled}>Save</button>
+                    <button class="skip-btn" onclick={handleSkip}>Skip</button>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

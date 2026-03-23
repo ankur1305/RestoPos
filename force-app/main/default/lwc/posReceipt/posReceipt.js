@@ -59,6 +59,9 @@ export default class PosReceipt extends LightningElement {
     get receiptNumber() { return this.receipt?.Receipt_Number__c || ''; }
     get orderNumber() { return this.receipt?.POS_Order__r?.Name || ''; }
     get tableName() { return this.receipt?.POS_Order__r?.Table__r?.Name || ''; }
+    get customerName() { return this.receipt?.POS_Order__r?.Customer__r?.Name || ''; }
+    get customerPhone() { return this.receipt?.POS_Order__r?.Customer__r?.Phone__c || ''; }
+    get hasCustomer() { return !!this.customerName; }
     get formattedSubtotal() { return '₹' + (this.receipt?.Subtotal__c || 0); }
     get formattedTax() { return '₹' + (this.receipt?.Tax_Amount__c || 0); }
     get formattedDiscount() { return '-₹' + (this.receipt?.Discount_Amount__c || 0); }

@@ -20,6 +20,7 @@
     <tabs>POS_Order__c</tabs>
     <tabs>Order_Item__c</tabs>
     <tabs>Receipt__c</tabs>
+    <tabs>Customer__c</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>RestoPos_UtilityBar</utilityBar>
     <workspaceConfig>
@@ -43,6 +44,9 @@
         </mappings>
         <mappings>
             <tab>Receipt__c</tab>
+        </mappings>
+        <mappings>
+            <tab>Customer__c</tab>
         </mappings>
     </workspaceConfig>
 </CustomApplication>

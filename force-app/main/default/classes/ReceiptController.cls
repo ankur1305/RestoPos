@@ -45,7 +45,8 @@ public without sharing class ReceiptController {
                    POS_Order__c, POS_Order__r.Name,
                    POS_Order__r.Table__r.Name,
                    POS_Order__r.Order_DateTime__c,
-                   POS_Order__r.Customer_Name__c,
+                   POS_Order__r.Customer__r.Name,
+                   POS_Order__r.Customer__r.Phone__c,
                    Restaurant__r.Name, Restaurant__r.Address__c,
                    Restaurant__r.Phone__c, Restaurant__r.Logo_URL__c,
                    Restaurant__r.Tax_Rate__c

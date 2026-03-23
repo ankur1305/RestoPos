@@ -6,6 +6,7 @@ import removeOrderItem from '@salesforce/apex/OrderController.removeOrderItem';
 import updateOrderItemQuantity from '@salesforce/apex/OrderController.updateOrderItemQuantity';
 import closeOrder from '@salesforce/apex/OrderController.closeOrder';
 import updateOrderStatus from '@salesforce/apex/OrderController.updateOrderStatus';
+import linkCustomerToOrder from '@salesforce/apex/OrderController.linkCustomerToOrder';
 
 export default class PosOrderScreen extends LightningElement {
     @api restaurantId;
@@ -15,6 +16,7 @@ export default class PosOrderScreen extends LightningElement {
     @track order;
     @track orderItems = [];
     @track showCancelConfirm = false;
+    @track mobileTab = 'menu';
     isLoading = false;
 
     _orderId;
@@ -40,7 +42,8 @@ export default class PosOrderScreen extends LightningElement {
             this.isLoading = true;
             this.order = await createOrder({
                 restaurantId: this.restaurantId,
-                tableId: this.tableId
+                tableId: this.tableId,
+                customerId: null
             });
             this._orderId = this.order.Id;
             this.orderItems = [];
@@ -48,6 +51,21 @@ export default class PosOrderScreen extends LightningElement {
             console.error('Create order error:', err);
         } finally {
             this.isLoading = false;
+        }
+    }
+
+    async handleCustomerChange(event) {
+        const customerId = event.detail.customerId;
+        if (this._orderId && customerId) {
+            try {
+                await linkCustomerToOrder({
+                    orderId: this._orderId,
+                    customerId: customerId
+                });
+                await this.loadOrder(this._orderId);
+            } catch (err) {
+                console.error('Link customer error:', err);
+            }
         }
     }
 
@@ -142,6 +160,14 @@ export default class PosOrderScreen extends LightningElement {
         this.dispatchEvent(new CustomEvent('backtotables'));
     }
 
+    handleMobileTabMenu() {
+        this.mobileTab = 'menu';
+    }
+
+    handleMobileTabCart() {
+        this.mobileTab = 'cart';
+    }
+
     get orderTotal() { return this.order?.Total_Amount__c || 0; }
     get orderSubtotal() { return this.order?.Subtotal__c || 0; }
     get taxAmount() { return this.order?.Tax_Amount__c || 0; }
@@ -152,6 +178,18 @@ export default class PosOrderScreen extends LightningElement {
     get noItems() { return !this.hasItems; }
     get tableName() { return this.order?.Table__r?.Name || ''; }
     get orderName() { return this.order?.Name || 'New Order'; }
+    get customerName() { return this.order?.Customer__r?.Name || ''; }
+    get hasCustomer() { return !!this.order?.Customer__c; }
+    get itemCount() { return this.orderItems ? this.orderItems.length : 0; }
+    get cartTabLabel() { return 'Cart (' + this.itemCount + ')'; }
+    get isMenuTab() { return this.mobileTab === 'menu'; }
+    get isCartTab() { return this.mobileTab === 'cart'; }
+    get menuTabClass() { return 'mobile-tab' + (this.isMenuTab ? ' active' : ''); }
+    get cartTabClass() { return 'mobile-tab' + (this.isCartTab ? ' active' : ''); }
+
+    get layoutClass() {
+        return 'order-layout mobile-show-' + this.mobileTab;
+    }
 
     get formattedSubtotal() { return '₹' + this.orderSubtotal; }
     get formattedTax() { return '₹' + this.taxAmount; }

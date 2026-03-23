@@ -287,3 +287,43 @@
 .close-modal-btn:hover {
     background: #e2e8f0;
 }
+
+@media (max-width: 768px) {
+    .legend {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .table-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .table-card {
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .table-name {
+        font-size: 1.125rem;
+    }
+
+    .table-capacity {
+        font-size: 0.75rem;
+    }
+
+    .view-header {
+        margin-bottom: 0.75rem;
+    }
+
+    .view-title {
+        font-size: 1.125rem;
+    }
+
+    .refresh-btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.75rem;
+    }
+}

@@ -50,7 +50,7 @@ private class TableControllerTest {
         Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         TableController.occupyTable(t.Id);
-        OrderController.createOrder(r.Id, t.Id);
+        OrderController.createOrder(r.Id, t.Id, null);
 
         Test.startTest();
         try {

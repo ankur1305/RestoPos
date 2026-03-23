@@ -15,7 +15,7 @@ private class ReceiptControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         Menu_Item__c mi = [SELECT Id FROM Menu_Item__c LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
         OrderController.addOrderItem(ord.Id, mi.Id, 2, '');
 
         Test.startTest();
@@ -33,7 +33,7 @@ private class ReceiptControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         Menu_Item__c mi = [SELECT Id FROM Menu_Item__c LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
         OrderController.addOrderItem(ord.Id, mi.Id, 1, '');
         Receipt__c receipt = ReceiptController.generateReceipt(ord.Id);
 

@@ -1,8 +1,15 @@
 <template>
     <div class="order-screen">
-        <div class="order-layout">
-            <div class="menu-panel">
-                <div class="panel-header">
+        <!-- Mobile tab toggle (hidden on desktop) -->
+        <div class="mobile-tabs">
+            <button class={menuTabClass} onclick={handleMobileTabMenu}>Menu</button>
+            <button class={cartTabClass} onclick={handleMobileTabCart}>{cartTabLabel}</button>
+            <button class="mobile-tab back-tab" onclick={handleBack}>Tables</button>
+        </div>
+
+        <div class={layoutClass}>
+            <div class="menu-panel" data-mobile-tab="menu">
+                <div class="panel-header desktop-only">
                     <h3 class="panel-title">Menu</h3>
                 </div>
                 <c-pos-menu-browser
@@ -12,16 +19,31 @@
                 ></c-pos-menu-browser>
             </div>
 
-            <div class="order-panel">
+            <div class="order-panel" data-mobile-tab="cart">
                 <div class="order-header">
                     <div class="order-info">
                         <h3 class="order-title">{orderName}</h3>
                         <span class="order-table">Table: {tableName}</span>
                     </div>
-                    <button class="back-btn" onclick={handleBack}>
+                    <button class="back-btn desktop-only" onclick={handleBack}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                         Tables
                     </button>
+                </div>
+
+                <div class="customer-section">
+                    <template lwc:if={hasCustomer}>
+                        <div class="customer-linked">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span class="customer-linked-name">{customerName}</span>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <c-pos-customer-input
+                            restaurant-id={restaurantId}
+                            oncustomerchange={handleCustomerChange}
+                        ></c-pos-customer-input>
+                    </template>
                 </div>
 
                 <div class="order-items-list">
@@ -38,7 +60,7 @@
                     </template>
                     <template lwc:else>
                         <div class="empty-order">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
                             <p>Tap items from the menu to add them</p>
                         </div>
                     </template>
@@ -70,10 +92,11 @@
                         <button class="action-btn danger" onclick={handleShowCancelConfirm} disabled={noItems}>
                             Cancel Order
                         </button>
-                        <button class="action-btn primary" onclick={handleGenerateBill} disabled={noItems}>
+                        <button class="action-btn primary generate-bill-btn" onclick={handleGenerateBill} disabled={noItems}>
                             Generate Bill
                         </button>
                     </div>
+                    <div class="mobile-bill-note">Ask reception to generate the bill</div>
                 </div>
 
                 <!-- Cancel Confirmation Modal -->

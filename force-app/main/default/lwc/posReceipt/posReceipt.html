@@ -30,6 +30,11 @@
                     <div class="row"><span>Order:</span><span>{orderNumber}</span></div>
                     <div class="row"><span>Table:</span><span>{tableName}</span></div>
                     <div class="row"><span>Date:</span><span>{formattedDate}</span></div>
+                    <template lwc:if={hasCustomer}>
+                        <div class="line"></div>
+                        <div class="row"><span>Customer:</span><span>{customerName}</span></div>
+                        <div class="row"><span>Phone:</span><span>{customerPhone}</span></div>
+                    </template>
                     <div class="line"></div>
                     <div class="row bold"><span>Item</span><span>Qty</span><span>Amt</span></div>
                     <div class="line"></div>

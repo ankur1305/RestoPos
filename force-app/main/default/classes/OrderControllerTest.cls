@@ -20,7 +20,7 @@ private class OrderControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
 
         Test.startTest();
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
         Test.stopTest();
 
         System.assertNotEquals(null, ord.Id);
@@ -36,7 +36,7 @@ private class OrderControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         Menu_Item__c mi = [SELECT Id FROM Menu_Item__c WHERE Name = 'Test Item' LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
 
         Test.startTest();
         Order_Item__c item = OrderController.addOrderItem(ord.Id, mi.Id, 2, 'Extra spicy');
@@ -64,7 +64,7 @@ private class OrderControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         Menu_Item__c mi = [SELECT Id FROM Menu_Item__c WHERE Name = 'Test Item' LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
 
         Test.startTest();
         Order_Item__c first = OrderController.addOrderItem(ord.Id, mi.Id, 1, '');
@@ -83,7 +83,7 @@ private class OrderControllerTest {
         Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
 
-        OrderController.createOrder(r.Id, t.Id);
+        OrderController.createOrder(r.Id, t.Id, null);
 
         Test.startTest();
         List<POS_Order__c> orders = OrderController.getActiveOrders(r.Id);
@@ -98,7 +98,7 @@ private class OrderControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         Menu_Item__c mi = [SELECT Id FROM Menu_Item__c WHERE Name = 'Test Item' LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
         OrderController.addOrderItem(ord.Id, mi.Id, 2, '');
 
         Test.startTest();
@@ -115,7 +115,7 @@ private class OrderControllerTest {
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
         Menu_Item__c mi = [SELECT Id FROM Menu_Item__c LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
         OrderController.addOrderItem(ord.Id, mi.Id, 1, '');
 
         Test.startTest();
@@ -137,7 +137,7 @@ private class OrderControllerTest {
         Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
 
-        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id);
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
 
         Test.startTest();
         POS_Order__c result = OrderController.updateOrderStatus(ord.Id, 'In Progress');

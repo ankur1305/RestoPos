@@ -4,14 +4,16 @@ import getMenuItems from '@salesforce/apex/MenuController.getMenuItems';
 import searchMenuItems from '@salesforce/apex/MenuController.searchMenuItems';
 
 const ALL_CATEGORY_ID = 'ALL';
+const PAGE_SIZE = 10;
 
 export default class PosMenuBrowser extends LightningElement {
     @api restaurantId;
     @api currencyCode;
     @track categories = [];
-    @track items = [];
+    @track allItems = [];
     @track selectedCategoryId = ALL_CATEGORY_ID;
     @track searchTerm = '';
+    @track visibleCount = PAGE_SIZE;
     isLoading = false;
 
     @wire(getMenuCategories, { restaurantId: '$restaurantId' })
@@ -26,10 +28,11 @@ export default class PosMenuBrowser extends LightningElement {
         try {
             this.isLoading = true;
             const categoryId = this.selectedCategoryId === ALL_CATEGORY_ID ? null : this.selectedCategoryId;
-            this.items = await getMenuItems({
+            this.allItems = await getMenuItems({
                 restaurantId: this.restaurantId,
                 categoryId: categoryId
             });
+            this.visibleCount = PAGE_SIZE;
         } catch (err) {
             console.error('Load items error:', err);
         } finally {
@@ -47,11 +50,12 @@ export default class PosMenuBrowser extends LightningElement {
         this.searchTerm = event.target.value;
         if (this.searchTerm.length >= 2) {
             try {
-                this.items = await searchMenuItems({
+                this.allItems = await searchMenuItems({
                     restaurantId: this.restaurantId,
                     searchTerm: this.searchTerm
                 });
                 this.selectedCategoryId = '';
+                this.visibleCount = PAGE_SIZE;
             } catch (err) {
                 console.error('Search error:', err);
             }
@@ -68,6 +72,27 @@ export default class PosMenuBrowser extends LightningElement {
             bubbles: true,
             composed: true
         }));
+    }
+
+    handleLoadMore() {
+        this.visibleCount += PAGE_SIZE;
+    }
+
+    get items() {
+        return this.allItems.slice(0, this.visibleCount);
+    }
+
+    get hasMoreItems() {
+        return this.allItems.length > this.visibleCount;
+    }
+
+    get remainingCount() {
+        const remaining = this.allItems.length - this.visibleCount;
+        return remaining > PAGE_SIZE ? PAGE_SIZE : remaining;
+    }
+
+    get loadMoreLabel() {
+        return 'Show ' + this.remainingCount + ' more';
     }
 
     get categoriesWithClass() {

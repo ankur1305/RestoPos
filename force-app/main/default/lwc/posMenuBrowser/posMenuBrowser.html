@@ -55,6 +55,12 @@
             <template lwc:else>
                 <div class="empty-menu">No items found</div>
             </template>
+
+            <template lwc:if={hasMoreItems}>
+                <button class="load-more-btn" onclick={handleLoadMore}>
+                    {loadMoreLabel}
+                </button>
+            </template>
         </div>
     </div>
 </template>

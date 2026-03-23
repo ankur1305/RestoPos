@@ -84,7 +84,8 @@ export default class PosTableView extends LightningElement {
             }
             const order = await createOrder({
                 restaurantId: this.restaurantId,
-                tableId: this.selectedTable.Id
+                tableId: this.selectedTable.Id,
+                customerId: null
             });
             this.showActions = false;
             this.dispatchEvent(new CustomEvent('tableselect', {
@@ -102,7 +103,8 @@ export default class PosTableView extends LightningElement {
             this.isLoading = true;
             const order = await createOrder({
                 restaurantId: this.restaurantId,
-                tableId: this.selectedTable.Id
+                tableId: this.selectedTable.Id,
+                customerId: null
             });
             this.showActions = false;
             this.dispatchEvent(new CustomEvent('tableselect', {

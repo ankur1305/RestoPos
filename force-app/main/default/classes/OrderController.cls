@@ -1,7 +1,7 @@
 public without sharing class OrderController {
 
     @AuraEnabled
-    public static POS_Order__c createOrder(String restaurantId, String tableId) {
+    public static POS_Order__c createOrder(String restaurantId, String tableId, String customerId) {
         POS_Order__c ord = new POS_Order__c(
             Restaurant__c = restaurantId,
             Table__c = tableId,
@@ -12,6 +12,9 @@ public without sharing class OrderController {
             Total_Amount__c = 0,
             Item_Count__c = 0
         );
+        if (String.isNotBlank(customerId)) {
+            ord.Customer__c = customerId;
+        }
         insert ord;
 
         Restaurant_Table__c tbl = new Restaurant_Table__c(
@@ -104,6 +107,8 @@ public without sharing class OrderController {
                    Subtotal__c, Tax_Amount__c, Discount_Percent__c,
                    Discount_Amount__c, Total_Amount__c,
                    Customer_Name__c, Notes__c, Item_Count__c,
+                   Customer__c, Customer__r.Name, Customer__r.Phone__c,
+                   Customer__r.Visit_Count__c,
                    Restaurant__c, Restaurant__r.Name,
                    Restaurant__r.Tax_Rate__c, Restaurant__r.Currency_Code__c,
                    Table__c, Table__r.Name,
@@ -152,6 +157,12 @@ public without sharing class OrderController {
     }
 
     @AuraEnabled
+    public static void linkCustomerToOrder(String orderId, String customerId) {
+        POS_Order__c ord = new POS_Order__c(Id = orderId, Customer__c = customerId);
+        update ord;
+    }
+
+    @AuraEnabled
     public static POS_Order__c applyDiscount(String orderId, Decimal discountPercent) {
         POS_Order__c ord = [
             SELECT Id, Subtotal__c, Restaurant__r.Tax_Rate__c
@@ -174,19 +185,24 @@ public without sharing class OrderController {
 
     @AuraEnabled
     public static Receipt__c closeOrder(String orderId) {
-        POS_Order__c ord = new POS_Order__c(Id = orderId, Status__c = 'Served');
+        POS_Order__c ord = [SELECT Id, Customer__c, Table__c FROM POS_Order__c WHERE Id = :orderId];
+        ord.Status__c = 'Served';
         update ord;
 
-        List<POS_Order__c> orderWithTable = [
-            SELECT Table__c FROM POS_Order__c WHERE Id = :orderId
-        ];
-        if (!orderWithTable.isEmpty() && orderWithTable[0].Table__c != null) {
+        if (ord.Table__c != null) {
             Restaurant_Table__c tbl = new Restaurant_Table__c(
-                Id = orderWithTable[0].Table__c,
+                Id = ord.Table__c,
                 Status__c = 'Available',
                 Current_Order__c = null
             );
             update tbl;
+        }
+
+        if (ord.Customer__c != null) {
+            Customer__c cust = [SELECT Id, Visit_Count__c FROM Customer__c WHERE Id = :ord.Customer__c];
+            cust.Visit_Count__c = (cust.Visit_Count__c != null ? cust.Visit_Count__c : 0) + 1;
+            cust.Last_Visit__c = Datetime.now();
+            update cust;
         }
 
         return ReceiptController.generateReceipt(orderId);
