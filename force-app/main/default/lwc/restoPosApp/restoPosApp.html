@@ -1,0 +1,58 @@
+<template>
+    <div class="restopos-app">
+        <template lwc:if={restaurant}>
+            <c-pos-header
+                restaurant-name={restaurantName}
+                current-view={currentView}
+                onnavigate={handleNavigation}
+                onbacktotables={handleBackToTables}
+            ></c-pos-header>
+        </template>
+
+        <template lwc:if={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading..." size="large"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={error}>
+            <div class="error-banner" onclick={handleDismissError}>
+                <lightning-icon icon-name="utility:error" variant="inverse" size="x-small"></lightning-icon>
+                <span class="error-text">{error}</span>
+                <span class="error-dismiss">✕</span>
+            </div>
+        </template>
+
+        <div class="main-content">
+            <template lwc:if={isLoginView}>
+                <c-pos-login onlogin={handleLogin}></c-pos-login>
+            </template>
+
+            <template lwc:if={isTableView}>
+                <c-pos-table-view
+                    restaurant-id={restaurant.Id}
+                    ontableselect={handleTableSelect}
+                ></c-pos-table-view>
+            </template>
+
+            <template lwc:if={isOrderView}>
+                <c-pos-order-screen
+                    restaurant-id={restaurant.Id}
+                    table-id={selectedTableId}
+                    order-id={selectedOrderId}
+                    tax-rate={restaurant.Tax_Rate__c}
+                    currency-code={restaurant.Currency_Code__c}
+                    onbacktotables={handleBackToTables}
+                    onviewreceipt={handleViewReceipt}
+                ></c-pos-order-screen>
+            </template>
+
+            <template lwc:if={isReceiptView}>
+                <c-pos-receipt
+                    receipt-id={receiptId}
+                    onbacktotables={handleBackToTables}
+                ></c-pos-receipt>
+            </template>
+        </div>
+    </div>
+</template>

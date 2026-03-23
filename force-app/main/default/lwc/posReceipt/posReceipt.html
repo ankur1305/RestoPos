@@ -1,0 +1,59 @@
+<template>
+    <div class="receipt-container">
+        <template lwc:if={isLoading}>
+            <div class="loading">
+                <lightning-spinner alternative-text="Loading receipt..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="receipt-actions">
+                <button class="action-btn primary" onclick={handlePrint}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Print Receipt
+                </button>
+                <button class="action-btn secondary" onclick={handleBack}>
+                    Back to Tables
+                </button>
+            </div>
+
+            <div class="receipt-wrapper">
+                <div class="receipt-paper">
+                    <div class="center">
+                        <h2>{restaurantName}</h2>
+                        <p>{restaurantAddress}</p>
+                        <template lwc:if={restaurantPhone}>
+                            <p>Tel: {restaurantPhone}</p>
+                        </template>
+                    </div>
+                    <div class="line"></div>
+                    <div class="row"><span>Receipt #:</span><span>{receiptNumber}</span></div>
+                    <div class="row"><span>Order:</span><span>{orderNumber}</span></div>
+                    <div class="row"><span>Table:</span><span>{tableName}</span></div>
+                    <div class="row"><span>Date:</span><span>{formattedDate}</span></div>
+                    <div class="line"></div>
+                    <div class="row bold"><span>Item</span><span>Qty</span><span>Amt</span></div>
+                    <div class="line"></div>
+                    <template for:each={formattedItems} for:item="item">
+                        <div key={item.Id} class="row item-row">
+                            <span class="item-col-name">{item.Item_Name__c}</span>
+                            <span class="item-col-qty">{item.Quantity__c}</span>
+                            <span class="item-col-amt">{item.formattedLineTotal}</span>
+                        </div>
+                    </template>
+                    <div class="line"></div>
+                    <div class="row"><span>Subtotal:</span><span>{formattedSubtotal}</span></div>
+                    <div class="row"><span>Tax:</span><span>{formattedTax}</span></div>
+                    <template lwc:if={hasDiscount}>
+                        <div class="row"><span>Discount:</span><span>{formattedDiscount}</span></div>
+                    </template>
+                    <div class="line"></div>
+                    <div class="row bold total-line"><span>TOTAL:</span><span>{formattedTotal}</span></div>
+                    <div class="line"></div>
+                    <div class="center">
+                        <p class="thank-you">Thank you for dining with us!</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

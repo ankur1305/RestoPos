@@ -1,0 +1,131 @@
+<template>
+    <div class="table-view">
+        <div class="view-header">
+            <h2 class="view-title">Tables</h2>
+            <button class="refresh-btn" onclick={handleRefresh}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                Refresh
+            </button>
+        </div>
+
+        <div class="legend">
+            <span class="legend-item"><span class="dot dot-available"></span>Available</span>
+            <span class="legend-item"><span class="dot dot-occupied"></span>Occupied</span>
+            <span class="legend-item"><span class="dot dot-reserved"></span>Reserved</span>
+        </div>
+
+        <div class="table-grid">
+            <template if:true={hasTables}>
+                <template for:each={tables} for:item="table">
+                    <div key={table.Id}
+                         class={table.cssClass}
+                         data-id={table.Id}
+                         onclick={handleTableClick}>
+                        <div class="table-name">{table.Name}</div>
+                        <div class="table-capacity">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {table.Capacity__c}
+                        </div>
+                        <div class="table-status-label">{table.statusLabel}</div>
+                        <template lwc:if={table.hasOrder}>
+                            <div class="table-order-info">
+                                <span class="order-badge">{table.orderName}</span>
+                                <span class="item-count">{table.itemCount} items</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+        <!-- Table Actions Modal -->
+        <template lwc:if={showActions}>
+            <div class="modal-overlay" onclick={handleCloseActions}>
+                <div class="modal-card" onclick={stopPropagation}>
+                    <h3 class="modal-title">Table {selectedTableName}</h3>
+                    <p class="modal-status">Status: {selectedTableStatus}</p>
+
+                    <template lwc:if={hasActionError}>
+                        <div class="action-error">{actionError}</div>
+                    </template>
+
+                    <!-- Available table: Occupy, Occupy & Order, or Reserve -->
+                    <template lwc:if={isSelectedAvailable}>
+                        <div class="action-list">
+                            <button class="table-action-btn" onclick={handleOccupyOnly}>
+                                <span class="action-icon">🪑</span>
+                                <div class="action-text">
+                                    <span class="action-label">Occupy Table</span>
+                                    <span class="action-desc">Mark as occupied, order later</span>
+                                </div>
+                            </button>
+                            <button class="table-action-btn primary-action" onclick={handleOccupyAndOrder}>
+                                <span class="action-icon">📝</span>
+                                <div class="action-text">
+                                    <span class="action-label">Occupy &amp; Start Order</span>
+                                    <span class="action-desc">Mark occupied and take order now</span>
+                                </div>
+                            </button>
+                            <button class="table-action-btn reserve-action" onclick={handleReserveTable}>
+                                <span class="action-icon">📅</span>
+                                <div class="action-text">
+                                    <span class="action-label">Reserve Table</span>
+                                    <span class="action-desc">Mark reserved for upcoming guest</span>
+                                </div>
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Occupied table with no order: Start Order or Free -->
+                    <template lwc:if={isSelectedOccupiedNoOrder}>
+                        <div class="action-list">
+                            <button class="table-action-btn primary-action" onclick={handleStartOrder}>
+                                <span class="action-icon">📝</span>
+                                <div class="action-text">
+                                    <span class="action-label">Start Order</span>
+                                    <span class="action-desc">Take order for this table</span>
+                                </div>
+                            </button>
+                            <button class="table-action-btn danger-action" onclick={handleFreeTable}>
+                                <span class="action-icon">🚪</span>
+                                <div class="action-text">
+                                    <span class="action-label">Mark Available</span>
+                                    <span class="action-desc">Customer left without ordering</span>
+                                </div>
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- Reserved table -->
+                    <template lwc:if={isSelectedReserved}>
+                        <div class="action-list">
+                            <button class="table-action-btn" onclick={handleOccupyOnly}>
+                                <span class="action-icon">🪑</span>
+                                <div class="action-text">
+                                    <span class="action-label">Seat Guest</span>
+                                    <span class="action-desc">Guest arrived, occupy table</span>
+                                </div>
+                            </button>
+                            <button class="table-action-btn primary-action" onclick={handleOccupyAndOrder}>
+                                <span class="action-icon">📝</span>
+                                <div class="action-text">
+                                    <span class="action-label">Seat &amp; Start Order</span>
+                                    <span class="action-desc">Guest arrived, take order now</span>
+                                </div>
+                            </button>
+                            <button class="table-action-btn danger-action" onclick={handleFreeTable}>
+                                <span class="action-icon">✕</span>
+                                <div class="action-text">
+                                    <span class="action-label">Cancel Reservation</span>
+                                    <span class="action-desc">Free this table</span>
+                                </div>
+                            </button>
+                        </div>
+                    </template>
+
+                    <button class="close-modal-btn" onclick={handleCloseActions}>Close</button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

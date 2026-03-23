@@ -1,0 +1,60 @@
+<template>
+    <div class="menu-browser">
+        <div class="menu-search">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input
+                class="search-input"
+                type="text"
+                placeholder="Search menu..."
+                value={searchTerm}
+                oninput={handleSearch}
+            />
+        </div>
+
+        <div class="category-tabs">
+            <template for:each={categoriesWithClass} for:item="cat">
+                <button key={cat.Id}
+                        class={cat.tabClass}
+                        data-id={cat.Id}
+                        onclick={handleCategoryClick}>
+                    {cat.Name}
+                </button>
+            </template>
+        </div>
+
+        <div class="menu-items-list">
+            <template lwc:if={isLoading}>
+                <div class="menu-loading">Loading...</div>
+            </template>
+            <template lwc:elseif={hasItems}>
+                <template for:each={items} for:item="item">
+                    <div key={item.Id} class="menu-item-row" data-id={item.Id} onclick={handleAddItem}>
+                        <div class="item-left">
+                            <span class="veg-indicator">
+                                <template lwc:if={item.Is_Vegetarian__c}>
+                                    <span class="veg-dot"></span>
+                                </template>
+                                <template lwc:else>
+                                    <span class="non-veg-dot"></span>
+                                </template>
+                            </span>
+                            <div class="item-info">
+                                <span class="item-name">{item.Name}</span>
+                                <template lwc:if={item.Description__c}>
+                                    <span class="item-desc">{item.Description__c}</span>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="item-right">
+                            <span class="item-price">₹{item.Price__c}</span>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template lwc:else>
+                <div class="empty-menu">No items found</div>
+            </template>
+        </div>
+    </div>
+</template>

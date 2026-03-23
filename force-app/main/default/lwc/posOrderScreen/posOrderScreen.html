@@ -1,0 +1,97 @@
+<template>
+    <div class="order-screen">
+        <div class="order-layout">
+            <div class="menu-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Menu</h3>
+                </div>
+                <c-pos-menu-browser
+                    restaurant-id={restaurantId}
+                    currency-code={currencyCode}
+                    onadditem={handleAddItem}
+                ></c-pos-menu-browser>
+            </div>
+
+            <div class="order-panel">
+                <div class="order-header">
+                    <div class="order-info">
+                        <h3 class="order-title">{orderName}</h3>
+                        <span class="order-table">Table: {tableName}</span>
+                    </div>
+                    <button class="back-btn" onclick={handleBack}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        Tables
+                    </button>
+                </div>
+
+                <div class="order-items-list">
+                    <template lwc:if={hasItems}>
+                        <template for:each={orderItems} for:item="item">
+                            <c-pos-order-item
+                                key={item.Id}
+                                item={item}
+                                currency-code={currencyCode}
+                                onremoveitem={handleRemoveItem}
+                                onupdatequantity={handleUpdateQuantity}
+                            ></c-pos-order-item>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-order">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                            <p>Tap items from the menu to add them</p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="order-footer">
+                    <div class="totals-section">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span>{formattedSubtotal}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax ({taxRate}%)</span>
+                            <span>{formattedTax}</span>
+                        </div>
+                        <template lwc:if={hasDiscount}>
+                            <div class="total-row discount-row">
+                                <span>Discount ({discountPercent}%)</span>
+                                <span>{formattedDiscount}</span>
+                            </div>
+                        </template>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span>{formattedTotal}</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn danger" onclick={handleShowCancelConfirm} disabled={noItems}>
+                            Cancel Order
+                        </button>
+                        <button class="action-btn primary" onclick={handleGenerateBill} disabled={noItems}>
+                            Generate Bill
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cancel Confirmation Modal -->
+                <template lwc:if={showCancelConfirm}>
+                    <div class="modal-overlay" onclick={handleCloseCancelConfirm}>
+                        <div class="modal-card" onclick={stopPropagation}>
+                            <h3 class="modal-title">Cancel Order?</h3>
+                            <div class="modal-body">
+                                <p class="confirm-text">Are you sure you want to cancel this order? This action cannot be undone.</p>
+                            </div>
+                            <div class="modal-actions">
+                                <button class="action-btn secondary" onclick={handleCloseCancelConfirm}>Go Back</button>
+                                <button class="action-btn danger" onclick={handleCancelOrder}>Yes, Cancel Order</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,22 @@
+<template>
+    <div class="order-item-row">
+        <div class="item-details">
+            <span class="item-name">{item.Item_Name__c}</span>
+            <span class="item-unit-price">{unitPrice} each</span>
+            <template lwc:if={item.Notes__c}>
+                <span class="item-notes">{item.Notes__c}</span>
+            </template>
+        </div>
+        <div class="item-controls">
+            <div class="qty-controls">
+                <button class="qty-btn" onclick={handleDecrement}>−</button>
+                <span class="qty-value">{item.Quantity__c}</span>
+                <button class="qty-btn" onclick={handleIncrement}>+</button>
+            </div>
+            <span class="line-total">{formattedPrice}</span>
+            <button class="remove-btn" onclick={handleRemove}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+        </div>
+    </div>
+</template>

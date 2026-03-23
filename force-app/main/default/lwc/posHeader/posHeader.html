@@ -1,0 +1,18 @@
+<template>
+    <header class="pos-header">
+        <div class="header-left">
+            <template lwc:if={showBackButton}>
+                <button class="back-btn" onclick={handleBack}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+            </template>
+            <h1 class="header-title">{restaurantName}</h1>
+        </div>
+        <div class="header-right">
+            <button class="nav-btn" onclick={handleNavTables}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Tables
+            </button>
+        </div>
+    </header>
+</template>

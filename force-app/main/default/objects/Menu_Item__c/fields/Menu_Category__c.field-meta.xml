@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Menu_Category__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <label>Menu Category</label>
+    <referenceTo>Menu_Category__c</referenceTo>
+    <relationshipLabel>Menu Items</relationshipLabel>
+    <relationshipName>Menu_Items</relationshipName>
+    <required>true</required>
+    <type>Lookup</type>
+</CustomField>
