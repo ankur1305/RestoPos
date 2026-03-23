@@ -1,0 +1,16 @@
+---
+description: Run terminal commands and Salesforce deploys automatically; do not ask permission
+alwaysApply: true
+---
+
+# Auto-run commands and deployments
+
+- **Do not ask** whether to run shell commands, tests, or `sf`/`npm`/build tooling. **Execute them** when they help complete the task (use appropriate permissions when the sandbox requires it).
+- **Do not ask** whether to deploy to Salesforce. When metadata or Apex/LWC changes should be in the org, **run** `sf project deploy start` (or the minimal deploy needed) automatically after substantive changes unless the user explicitly said not to deploy in that message.
+- If a command fails, **retry or fix** and run again; only summarize what ran and the outcome for the user.
+
+```markdown
+❌ Avoid: "Should I deploy this for you?" / "Want me to run the tests?"
+
+✅ Do: Run deploy/tests, then report Deploy ID / pass-fail.
+```

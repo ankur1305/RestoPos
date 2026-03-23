@@ -6,11 +6,25 @@
                 <input
                     class="field-input"
                     type="tel"
-                    placeholder="Enter phone number"
+                    inputmode="numeric"
+                    autocomplete="tel-national"
+                    placeholder="10-digit number"
+                    title="Enter exactly 10 digits"
                     value={phone}
                     oninput={handlePhoneChange}
-                    maxlength="15"
+                    maxlength="10"
                 />
+            </div>
+
+            <div class="whatsapp-optin-row">
+                <label class="optin-label">
+                    <input
+                        type="checkbox"
+                        checked={whatsappReceiptOptIn}
+                        onchange={handleWhatsAppOptInChange}
+                    />
+                    <span>Send receipt on WhatsApp</span>
+                </label>
             </div>
 
             <template lwc:if={isSearching}>
@@ -33,8 +47,7 @@
                         value={customerName}
                         oninput={handleNameChange}
                     />
-                    <button class="save-btn" onclick={handleCreateCustomer} disabled={isCreateDisabled}>Save</button>
-                    <button class="skip-btn" onclick={handleSkip}>Skip</button>
+                    <button type="button" class="save-btn" onclick={handleCreateCustomer} disabled={isCreateDisabled}>Save</button>
                 </div>
             </template>
         </div>

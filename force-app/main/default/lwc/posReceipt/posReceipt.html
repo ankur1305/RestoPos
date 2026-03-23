@@ -7,11 +7,17 @@
         </template>
         <template lwc:else>
             <div class="receipt-actions">
-                <button class="action-btn primary" onclick={handlePrint}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Print Receipt
+                <button type="button" class="action-btn primary" onclick={handleDownloadReceipt} disabled={isDownloadingAny}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                    <template lwc:if={isDownloadingA4}>Opening…</template>
+                    <template lwc:else>A4 PDF</template>
                 </button>
-                <button class="action-btn secondary" onclick={handleBack}>
+                <button type="button" class="action-btn secondary" onclick={handleDownloadThermalReceipt} disabled={isDownloadingAny}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                    <template lwc:if={isDownloadingThermal}>Opening…</template>
+                    <template lwc:else>Thermal PDF</template>
+                </button>
+                <button type="button" class="action-btn secondary" onclick={handleBack}>
                     Back to Tables
                 </button>
             </div>

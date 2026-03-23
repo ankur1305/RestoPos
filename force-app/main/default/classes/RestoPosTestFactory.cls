@@ -10,7 +10,8 @@ public class RestoPosTestFactory {
             PIN__c = '1234',
             Is_Active__c = true,
             Address__c = '123 Test Street',
-            Phone__c = '9876543210'
+            Phone__c = '9876543210',
+            Email__c = 'test@example.com'
         );
         insert r;
         return r;
@@ -53,5 +54,17 @@ public class RestoPosTestFactory {
         );
         insert item;
         return item;
+    }
+
+    public static Customer__c createCustomer(Id restaurantId, String name, String phone, String email) {
+        Customer__c customer = new Customer__c(
+            Name = name,
+            Phone__c = phone,
+            Email__c = email,
+            Restaurant__c = restaurantId,
+            Visit_Count__c = 0
+        );
+        insert customer;
+        return customer;
     }
 }

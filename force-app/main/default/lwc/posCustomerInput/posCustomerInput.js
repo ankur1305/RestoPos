@@ -1,9 +1,20 @@
 import { LightningElement, api, track } from 'lwc';
 import searchByPhone from '@salesforce/apex/CustomerController.searchByPhone';
 import createCustomer from '@salesforce/apex/CustomerController.createCustomer';
+import { normalizeIndianPhone } from 'c/posUtils';
 
 export default class PosCustomerInput extends LightningElement {
     @api restaurantId;
+    _localWhatsAppOpt = false;
+
+    @api
+    get whatsappReceiptOptIn() {
+        return this._localWhatsAppOpt;
+    }
+    set whatsappReceiptOptIn(value) {
+        this._localWhatsAppOpt = !!value;
+    }
+
     @track phone = '';
     @track customerName = '';
     @track customer = null;
@@ -13,17 +24,24 @@ export default class PosCustomerInput extends LightningElement {
 
     _searchTimeout;
 
+    disconnectedCallback() {
+        if (this._searchTimeout) {
+            clearTimeout(this._searchTimeout);
+        }
+    }
+
     handlePhoneChange(event) {
-        this.phone = event.target.value;
+        this.phone = normalizeIndianPhone(event.target.value);
         this.customer = null;
         this.showNewForm = false;
         this.searched = false;
+        this.customerName = '';
 
         if (this._searchTimeout) {
             clearTimeout(this._searchTimeout);
         }
 
-        if (this.phone.length >= 10) {
+        if (this.phone.length === 10) {
             this._searchTimeout = setTimeout(() => {
                 this.doSearch();
             }, 400);
@@ -33,6 +51,9 @@ export default class PosCustomerInput extends LightningElement {
     }
 
     async doSearch() {
+        if (this.phone.length !== 10) {
+            return;
+        }
         try {
             this.isSearching = true;
             const result = await searchByPhone({
@@ -60,7 +81,7 @@ export default class PosCustomerInput extends LightningElement {
     }
 
     async handleCreateCustomer() {
-        if (!this.customerName || !this.phone) return;
+        if (!this.customerName || this.phone.length !== 10) return;
         try {
             this.isSearching = true;
             this.customer = await createCustomer({
@@ -77,12 +98,15 @@ export default class PosCustomerInput extends LightningElement {
         }
     }
 
-    handleSkip() {
-        this.phone = '';
-        this.customer = null;
-        this.showNewForm = false;
-        this.searched = false;
-        this.fireCustomerChange(null);
+    handleWhatsAppOptInChange(event) {
+        this._localWhatsAppOpt = event.target.checked;
+        this.dispatchEvent(
+            new CustomEvent('whatsappoptinchange', {
+                detail: { optIn: this._localWhatsAppOpt },
+                bubbles: true,
+                composed: true
+            })
+        );
     }
 
     fireCustomerChange(customerId) {
@@ -104,6 +128,6 @@ export default class PosCustomerInput extends LightningElement {
     }
 
     get isCreateDisabled() {
-        return !this.customerName || !this.phone;
+        return !this.customerName || this.phone.length !== 10;
     }
 }

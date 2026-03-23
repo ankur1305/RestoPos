@@ -100,6 +100,36 @@ public without sharing class OrderController {
         recalculateOrderTotals(orderId);
     }
 
+    /**
+     * Cart-only payload after line mutations: lighter than getOrder (no customer/table/restaurant joins).
+     */
+    @AuraEnabled
+    public static OrderCartSnapshot getOrderCartSnapshot(String orderId) {
+        POS_Order__c header = [
+            SELECT Subtotal__c, Tax_Amount__c, Discount_Amount__c, Discount_Percent__c,
+                   Total_Amount__c, Item_Count__c
+            FROM POS_Order__c
+            WHERE Id = :orderId
+        ];
+        List<Order_Item__c> lines = [
+            SELECT Id, Item_Name__c, Quantity__c, Unit_Price__c, Line_Total__c,
+                   Notes__c, Status__c, Menu_Item__c
+            FROM Order_Item__c
+            WHERE POS_Order__c = :orderId
+              AND Status__c != 'Cancelled'
+            ORDER BY CreatedDate ASC
+        ];
+        OrderCartSnapshot snap = new OrderCartSnapshot();
+        snap.subtotal = header.Subtotal__c;
+        snap.taxAmount = header.Tax_Amount__c;
+        snap.discountAmount = header.Discount_Amount__c;
+        snap.discountPercent = header.Discount_Percent__c;
+        snap.totalAmount = header.Total_Amount__c;
+        snap.itemCount = header.Item_Count__c == null ? 0 : header.Item_Count__c.intValue();
+        snap.lineItems = lines;
+        return snap;
+    }
+
     @AuraEnabled
     public static POS_Order__c getOrder(String orderId) {
         return [
@@ -109,6 +139,7 @@ public without sharing class OrderController {
                    Customer_Name__c, Notes__c, Item_Count__c,
                    Customer__c, Customer__r.Name, Customer__r.Phone__c,
                    Customer__r.Visit_Count__c,
+                   WhatsApp_Receipt_Opt_In__c,
                    Restaurant__c, Restaurant__r.Name,
                    Restaurant__r.Tax_Rate__c, Restaurant__r.Currency_Code__c,
                    Table__c, Table__r.Name,
@@ -160,6 +191,14 @@ public without sharing class OrderController {
     public static void linkCustomerToOrder(String orderId, String customerId) {
         POS_Order__c ord = new POS_Order__c(Id = orderId, Customer__c = customerId);
         update ord;
+    }
+
+    @AuraEnabled
+    public static void updateOrderWhatsAppOptIn(String orderId, Boolean optIn) {
+        if (String.isBlank(orderId)) {
+            return;
+        }
+        update new POS_Order__c(Id = orderId, WhatsApp_Receipt_Opt_In__c = (optIn == true));
     }
 
     @AuraEnabled
@@ -239,5 +278,22 @@ public without sharing class OrderController {
         ord.Tax_Amount__c = taxAmt;
         ord.Total_Amount__c = subtotal - discountAmt + taxAmt;
         update ord;
+    }
+
+    public class OrderCartSnapshot {
+        @AuraEnabled
+        public Decimal subtotal;
+        @AuraEnabled
+        public Decimal taxAmount;
+        @AuraEnabled
+        public Decimal discountAmount;
+        @AuraEnabled
+        public Decimal discountPercent;
+        @AuraEnabled
+        public Decimal totalAmount;
+        @AuraEnabled
+        public Integer itemCount;
+        @AuraEnabled
+        public List<Order_Item__c> lineItems;
     }
 }

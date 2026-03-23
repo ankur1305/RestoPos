@@ -21,6 +21,7 @@
     <tabs>Order_Item__c</tabs>
     <tabs>Receipt__c</tabs>
     <tabs>Customer__c</tabs>
+    <tabs>WhatsApp_API_Config__c</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>RestoPos_UtilityBar</utilityBar>
     <workspaceConfig>
@@ -47,6 +48,9 @@
         </mappings>
         <mappings>
             <tab>Customer__c</tab>
+        </mappings>
+        <mappings>
+            <tab>WhatsApp_API_Config__c</tab>
         </mappings>
     </workspaceConfig>
 </CustomApplication>

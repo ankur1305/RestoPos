@@ -45,4 +45,53 @@ private class ReceiptControllerTest {
         List<Order_Item__c> items = (List<Order_Item__c>)data.get('items');
         System.assertEquals(1, items.size());
     }
+
+    @IsTest
+    static void testGetReceiptPdfBase64() {
+        Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
+        Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
+        Menu_Item__c mi = [SELECT Id FROM Menu_Item__c LIMIT 1];
+
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
+        OrderController.addOrderItem(ord.Id, mi.Id, 1, '');
+        Receipt__c receipt = ReceiptController.generateReceipt(ord.Id);
+
+        Test.startTest();
+        String b64 = ReceiptController.getReceiptPdfBase64(receipt.Id, 'a4');
+        String thermalB64 = ReceiptController.getReceiptPdfBase64(receipt.Id, 'thermal');
+        Test.stopTest();
+
+        System.assertNotEquals(null, b64);
+        System.assert(b64.length() > 4);
+        System.assertNotEquals(null, thermalB64);
+        System.assert(thermalB64.length() > 4);
+    }
+
+    @IsTest
+    static void testGetReceiptPdfBase64ValidationErrors() {
+        try {
+            ReceiptController.getReceiptPdfBase64(null, 'a4');
+            System.assert(false, 'expected AuraHandledException');
+        } catch (AuraHandledException expected) {
+            System.assert(true);
+        }
+        try {
+            ReceiptController.getReceiptPdfBase64('', 'a4');
+            System.assert(false, 'expected AuraHandledException');
+        } catch (AuraHandledException expected) {
+            System.assert(true);
+        }
+        try {
+            ReceiptController.getReceiptPdfBase64('not-a-valid-id', 'a4');
+            System.assert(false, 'expected AuraHandledException');
+        } catch (AuraHandledException expected) {
+            System.assert(true);
+        }
+        try {
+            ReceiptController.getReceiptPdfBase64(UserInfo.getUserId(), 'a4');
+            System.assert(false, 'expected AuraHandledException');
+        } catch (AuraHandledException expected) {
+            System.assert(true);
+        }
+    }
 }

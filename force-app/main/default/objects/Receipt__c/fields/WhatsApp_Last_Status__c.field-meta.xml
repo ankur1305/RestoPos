@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>WhatsApp_Last_Status__c</fullName>
+    <description>Last WhatsApp send outcome from WhatsAppReceiptQueueable. Use when guest users cannot use debug logs. Grant guest Read FLS if this should appear on the public receipt screen.</description>
+    <label>WhatsApp Last Status</label>
+    <length>1000</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

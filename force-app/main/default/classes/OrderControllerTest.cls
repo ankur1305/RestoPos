@@ -79,6 +79,25 @@ private class OrderControllerTest {
     }
 
     @IsTest
+    static void testGetOrderCartSnapshot() {
+        Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
+        Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];
+        Menu_Item__c mi = [SELECT Id FROM Menu_Item__c WHERE Name = 'Test Item' LIMIT 1];
+
+        POS_Order__c ord = OrderController.createOrder(r.Id, t.Id, null);
+        OrderController.addOrderItem(ord.Id, mi.Id, 2, '');
+
+        Test.startTest();
+        OrderController.OrderCartSnapshot snap = OrderController.getOrderCartSnapshot(ord.Id);
+        Test.stopTest();
+
+        System.assertNotEquals(null, snap);
+        System.assertEquals(200, snap.subtotal);
+        System.assertEquals(1, snap.lineItems.size());
+        System.assertEquals(2, snap.lineItems[0].Quantity__c);
+    }
+
+    @IsTest
     static void testGetActiveOrders() {
         Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
         Restaurant_Table__c t = [SELECT Id FROM Restaurant_Table__c LIMIT 1];

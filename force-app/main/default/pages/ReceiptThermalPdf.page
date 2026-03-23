@@ -1,0 +1,207 @@
+<apex:page controller="ReceiptPdfController" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0" cache="false">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<style type="text/css">
+    @page {
+        margin: 8mm 0;
+        size: A4;
+    }
+    html {
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 8.5pt;
+        color: #000;
+    }
+    .page-wrap {
+        width: 100%;
+        text-align: center;
+    }
+    .receipt-root {
+        width: 215pt;
+        margin: 0 auto;
+        text-align: left;
+    }
+    .center {
+        text-align: center;
+    }
+    .store-name {
+        margin: 0 0 4pt 0;
+        font-size: 12pt;
+        font-weight: bold;
+    }
+    .meta-copy {
+        margin: 2pt 0;
+        line-height: 1.35;
+        word-wrap: break-word;
+    }
+    .line {
+        border-top: 1px dashed #000;
+        margin: 8pt 0;
+    }
+    table.meta,
+    table.items,
+    table.totals {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    table.meta td,
+    table.totals td {
+        padding: 2pt 0;
+        vertical-align: top;
+    }
+    table.meta td.label,
+    table.totals td.label {
+        width: 40%;
+    }
+    table.meta td.value,
+    table.totals td.value {
+        text-align: right;
+        word-wrap: break-word;
+    }
+    table.items th,
+    table.items td {
+        padding: 3pt 0;
+        vertical-align: top;
+        word-wrap: break-word;
+    }
+    table.items th {
+        text-align: left;
+        border-bottom: 1px solid #000;
+    }
+    table.items th.item,
+    table.items td.item {
+        width: 54%;
+    }
+    table.items th.qty,
+    table.items td.qty {
+        width: 12%;
+        text-align: center;
+    }
+    table.items th.amt,
+    table.items td.amt {
+        width: 34%;
+        text-align: right;
+        white-space: nowrap;
+    }
+    .total-row td {
+        border-top: 1px solid #000;
+        padding-top: 5pt;
+        font-weight: bold;
+        font-size: 10pt;
+    }
+    .thank-you {
+        margin-top: 10pt;
+        text-align: center;
+        font-style: italic;
+    }
+</style>
+</head>
+<body>
+<apex:outputPanel rendered="{!hasReceipt}">
+    <div class="page-wrap">
+        <div class="receipt-root">
+            <div class="center">
+                <div class="store-name"><apex:outputText value="{!restaurantName}" escape="true"/></div>
+                <div class="meta-copy"><apex:outputText value="{!restaurantAddress}" escape="true"/></div>
+                <apex:outputPanel rendered="{!hasRestaurantPhone}">
+                    <div class="meta-copy">Tel: <apex:outputText value="{!restaurantPhone}" escape="true"/></div>
+                </apex:outputPanel>
+            </div>
+
+            <div class="line"></div>
+
+            <table class="meta">
+                <tr>
+                    <td class="label">Receipt #</td>
+                    <td class="value"><apex:outputText value="{!receipt.Receipt_Number__c}" escape="true"/></td>
+                </tr>
+                <tr>
+                    <td class="label">Order</td>
+                    <td class="value"><apex:outputText value="{!orderName}" escape="true"/></td>
+                </tr>
+                <tr>
+                    <td class="label">Table</td>
+                    <td class="value"><apex:outputText value="{!tableName}" escape="true"/></td>
+                </tr>
+                <tr>
+                    <td class="label">Date</td>
+                    <td class="value"><apex:outputText value="{!formattedDate}" escape="true"/></td>
+                </tr>
+            </table>
+
+            <apex:outputPanel rendered="{!hasCustomer}">
+                <div class="line"></div>
+                <table class="meta">
+                    <tr>
+                        <td class="label">Customer</td>
+                        <td class="value"><apex:outputText value="{!receipt.POS_Order__r.Customer__r.Name}" escape="true"/></td>
+                    </tr>
+                    <tr>
+                        <td class="label">Phone</td>
+                        <td class="value"><apex:outputText value="{!receipt.POS_Order__r.Customer__r.Phone__c}" escape="true"/></td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+
+            <div class="line"></div>
+
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th class="item">Item</th>
+                        <th class="qty">Qty</th>
+                        <th class="amt">Amt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:repeat value="{!lines}" var="row">
+                        <tr>
+                            <td class="item"><apex:outputText value="{!row.itemName}" escape="true"/></td>
+                            <td class="qty"><apex:outputText value="{!row.quantity}"/></td>
+                            <td class="amt"><apex:outputText value="{!row.amount}" escape="true"/></td>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+
+            <div class="line"></div>
+
+            <table class="totals">
+                <tr>
+                    <td class="label">Subtotal</td>
+                    <td class="value"><apex:outputText value="{!fmtSubtotal}" escape="true"/></td>
+                </tr>
+                <tr>
+                    <td class="label">Tax</td>
+                    <td class="value"><apex:outputText value="{!fmtTax}" escape="true"/></td>
+                </tr>
+                <apex:outputPanel layout="none" rendered="{!hasDiscount}">
+                    <tr>
+                        <td class="label">Discount</td>
+                        <td class="value"><apex:outputText value="{!fmtDiscount}" escape="true"/></td>
+                    </tr>
+                </apex:outputPanel>
+                <tr class="total-row">
+                    <td class="label">TOTAL</td>
+                    <td class="value"><apex:outputText value="{!fmtTotal}" escape="true"/></td>
+                </tr>
+            </table>
+
+            <div class="line"></div>
+            <div class="thank-you">Thank you for dining with us!</div>
+        </div>
+    </div>
+</apex:outputPanel>
+<apex:outputPanel rendered="{!NOT(hasReceipt)}">
+    <p>Receipt not found.</p>
+</apex:outputPanel>
+</body>
+</html>
+</apex:page>

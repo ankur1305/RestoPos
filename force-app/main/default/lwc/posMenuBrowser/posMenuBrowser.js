@@ -5,6 +5,7 @@ import searchMenuItems from '@salesforce/apex/MenuController.searchMenuItems';
 
 const ALL_CATEGORY_ID = 'ALL';
 const PAGE_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 280;
 
 export default class PosMenuBrowser extends LightningElement {
     @api restaurantId;
@@ -15,6 +16,7 @@ export default class PosMenuBrowser extends LightningElement {
     @track searchTerm = '';
     @track visibleCount = PAGE_SIZE;
     isLoading = false;
+    searchDebounceId;
 
     @wire(getMenuCategories, { restaurantId: '$restaurantId' })
     wiredCategories({ data }) {
@@ -41,27 +43,54 @@ export default class PosMenuBrowser extends LightningElement {
     }
 
     handleCategoryClick(event) {
+        if (this.searchDebounceId) {
+            window.clearTimeout(this.searchDebounceId);
+            this.searchDebounceId = undefined;
+        }
         this.selectedCategoryId = event.currentTarget.dataset.id;
         this.searchTerm = '';
         this.loadItems();
     }
 
-    async handleSearch(event) {
+    handleSearch(event) {
         this.searchTerm = event.target.value;
-        if (this.searchTerm.length >= 2) {
-            try {
-                this.allItems = await searchMenuItems({
-                    restaurantId: this.restaurantId,
-                    searchTerm: this.searchTerm
-                });
-                this.selectedCategoryId = '';
-                this.visibleCount = PAGE_SIZE;
-            } catch (err) {
-                console.error('Search error:', err);
-            }
-        } else if (this.searchTerm.length === 0) {
+        if (this.searchDebounceId) {
+            window.clearTimeout(this.searchDebounceId);
+            this.searchDebounceId = undefined;
+        }
+        if (this.searchTerm.length === 0) {
             this.selectedCategoryId = ALL_CATEGORY_ID;
             this.loadItems();
+            return;
+        }
+        if (this.searchTerm.length < 2) {
+            return;
+        }
+        this.searchDebounceId = window.setTimeout(() => {
+            this.searchDebounceId = undefined;
+            this.runSearch();
+        }, SEARCH_DEBOUNCE_MS);
+    }
+
+    async runSearch() {
+        if (this.searchTerm.length < 2) {
+            return;
+        }
+        try {
+            this.allItems = await searchMenuItems({
+                restaurantId: this.restaurantId,
+                searchTerm: this.searchTerm
+            });
+            this.selectedCategoryId = '';
+            this.visibleCount = PAGE_SIZE;
+        } catch (err) {
+            console.error('Search error:', err);
+        }
+    }
+
+    disconnectedCallback() {
+        if (this.searchDebounceId) {
+            window.clearTimeout(this.searchDebounceId);
         }
     }
 

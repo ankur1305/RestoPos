@@ -2,10 +2,27 @@
     <div class="table-view">
         <div class="view-header">
             <h2 class="view-title">Tables</h2>
+            <template if:true={isDesktop}>
+                <div class="auto-refresh-control">
+                    <label for="autoRefreshSelect">Auto-refresh:</label>
+                    <select id="autoRefreshSelect" onchange={handleAutoRefreshChange}>
+                        <option value="0" selected={isAutoRefreshOff}>Off</option>
+                        <option value="10000" selected={isAutoRefresh10}>10 seconds</option>
+                        <option value="15000" selected={isAutoRefresh15}>15 seconds</option>
+                        <option value="30000" selected={isAutoRefresh30}>30 seconds</option>
+                        <option value="60000" selected={isAutoRefresh60}>60 seconds</option>
+                    </select>
+                </div>
+            </template>
             <button class="refresh-btn" onclick={handleRefresh}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
                 Refresh
             </button>
+            <template if:true={isDesktop}>
+                <template if:false={isAutoRefreshOff}>
+                    <div class="auto-refresh-status">Next refresh in {nextRefreshIn}s</div>
+                </template>
+            </template>
         </div>
 
         <div class="legend">

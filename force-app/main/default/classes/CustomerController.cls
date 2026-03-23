@@ -1,8 +1,14 @@
 public without sharing class CustomerController {
 
+    private static Boolean isTenDigitPhone(String phone) {
+        return String.isNotBlank(phone)
+            && phone.length() == 10
+            && Pattern.matches('^[0-9]{10}$', phone);
+    }
+
     @AuraEnabled
     public static Customer__c searchByPhone(String restaurantId, String phone) {
-        if (String.isBlank(phone) || phone.length() < 4) {
+        if (String.isBlank(restaurantId) || !isTenDigitPhone(phone)) {
             return null;
         }
         List<Customer__c> customers = [
@@ -16,6 +22,12 @@ public without sharing class CustomerController {
 
     @AuraEnabled
     public static Customer__c createCustomer(String restaurantId, String name, String phone) {
+        if (String.isBlank(name)) {
+            throw new AuraHandledException('Customer name is required.');
+        }
+        if (!isTenDigitPhone(phone)) {
+            throw new AuraHandledException('Phone must be exactly 10 digits.');
+        }
         Customer__c cust = new Customer__c(
             Name = name,
             Phone__c = phone,

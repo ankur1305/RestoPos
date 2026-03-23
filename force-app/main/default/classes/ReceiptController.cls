@@ -22,6 +22,10 @@ public without sharing class ReceiptController {
         );
         insert receipt;
 
+        if (!Test.isRunningTest()) {
+            System.enqueueJob(new WhatsAppReceiptQueueable(receipt.Id));
+        }
+
         return [
             SELECT Id, Name, Receipt_Number__c, Generated_DateTime__c,
                    Subtotal__c, Tax_Amount__c, Discount_Amount__c,
@@ -66,5 +70,54 @@ public without sharing class ReceiptController {
         result.put('receipt', receipt);
         result.put('items', items);
         return result;
+    }
+
+    /**
+     * Renders the requested receipt page as PDF and returns base64 for LWC download.
+     */
+    @AuraEnabled
+    public static String getReceiptPdfBase64(String receiptId, String format) {
+        if (String.isBlank(receiptId)) {
+            throw new AuraHandledException('Receipt id is required.');
+        }
+        Id rid;
+        try {
+            rid = (Id) receiptId;
+        } catch (Exception e) {
+            throw new AuraHandledException('Invalid receipt id.');
+        }
+        List<Receipt__c> exists = [SELECT Id FROM Receipt__c WHERE Id = :rid LIMIT 1];
+        if (exists.isEmpty()) {
+            throw new AuraHandledException('Receipt was not found.');
+        }
+
+        Blob pdfBlob = getReceiptPdfBlob(rid, format);
+
+        if (!Test.isRunningTest() && (pdfBlob == null || pdfBlob.size() < 100)) {
+            throw new AuraHandledException('Could not generate the receipt PDF.');
+        }
+
+        return EncodingUtil.base64Encode(pdfBlob);
+    }
+
+    /**
+     * Shared PDF blob for download (LWC) and WhatsApp (Queueable).
+     */
+    public static Blob getReceiptPdfBlob(Id receiptId) {
+        return getReceiptPdfBlob(receiptId, 'a4');
+    }
+
+    public static Blob getReceiptPdfBlob(Id receiptId, String format) {
+        Boolean isThermal = 'thermal'.equalsIgnoreCase(format);
+        // HTML Visualforce only — getContentAsPDF() must not target pages with renderAs="pdf".
+        PageReference pdfPage = isThermal ? Page.ReceiptThermalPdf : Page.ReceiptPdf;
+        pdfPage.getParameters().put('id', String.valueOf(receiptId));
+        if (isThermal) {
+            pdfPage.getParameters().put('format', 'thermal');
+        }
+        if (Test.isRunningTest()) {
+            return Blob.valueOf('%PDF-1.4');
+        }
+        return pdfPage.getContentAsPDF();
     }
 }

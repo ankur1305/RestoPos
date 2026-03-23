@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getTables from '@salesforce/apex/TableController.getTables';
 import occupyTable from '@salesforce/apex/TableController.occupyTable';
 import updateTableStatus from '@salesforce/apex/TableController.updateTableStatus';
@@ -10,15 +11,42 @@ export default class PosTableView extends LightningElement {
     @track selectedTable = null;
     @track showActions = false;
     @track actionError = '';
+    @track autoRefreshPeriod = 0; // in milliseconds, 0 = off
+    @track isDesktop = false;
+    @track nextRefreshIn = 0; // countdown seconds
+
     isLoading = false;
+    autoRefreshTimerId;
+    countDownTimerId;
 
     connectedCallback() {
-        this.loadTables();
+        this.isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+        this.resizeHandler = this.handleWindowResize.bind(this);
+        window.addEventListener('resize', this.resizeHandler);
+
+        if (this.isDesktop) {
+            const savedPeriod = parseInt(localStorage.getItem('posTableAutoRefresh'), 10);
+            if (!Number.isNaN(savedPeriod)) {
+                this.autoRefreshPeriod = savedPeriod;
+            } else {
+                this.autoRefreshPeriod = 15000; // default 15 seconds on desktop
+            }
+            this.startAutoRefresh();
+        } else {
+            this.autoRefreshPeriod = 0;
+        }
+
+        this.loadTables(false);
     }
 
-    async loadTables() {
+    /**
+     * @param {boolean} silent When true (e.g. auto-refresh), skip isLoading to avoid UI churn.
+     */
+    async loadTables(silent = false) {
         try {
-            this.isLoading = true;
+            if (!silent) {
+                this.isLoading = true;
+            }
             const data = await getTables({ restaurantId: this.restaurantId });
             this.tables = data.map(t => ({
                 ...t,
@@ -32,7 +60,9 @@ export default class PosTableView extends LightningElement {
         } catch (err) {
             console.error('Load tables error:', err);
         } finally {
-            this.isLoading = false;
+            if (!silent) {
+                this.isLoading = false;
+            }
         }
     }
 
@@ -143,12 +173,106 @@ export default class PosTableView extends LightningElement {
         }
     }
 
+    handleWindowResize() {
+        const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+        if (this.isDesktop !== isDesktop) {
+            this.isDesktop = isDesktop;
+            if (!isDesktop) {
+                this.autoRefreshPeriod = 0;
+                this.stopAutoRefresh();
+            } else {
+                this.autoRefreshPeriod = 15000;
+                this.startAutoRefresh();
+            }
+        }
+    }
+
+    startAutoRefresh() {
+        this.stopAutoRefresh();
+        if (this.autoRefreshPeriod > 0 && this.isDesktop) {
+            this.nextRefreshIn = Math.floor(this.autoRefreshPeriod / 1000);
+            this.autoRefreshTimerId = window.setInterval(() => {
+                this.loadTables(true);
+                this.nextRefreshIn = Math.floor(this.autoRefreshPeriod / 1000);
+            }, this.autoRefreshPeriod);
+
+            this.countDownTimerId = window.setInterval(() => {
+                if (this.nextRefreshIn > 0) {
+                    this.nextRefreshIn -= 1;
+                }
+            }, 1000);
+        }
+    }
+
+    stopAutoRefresh() {
+        if (this.autoRefreshTimerId) {
+            window.clearInterval(this.autoRefreshTimerId);
+            this.autoRefreshTimerId = undefined;
+        }
+        if (this.countDownTimerId) {
+            window.clearInterval(this.countDownTimerId);
+            this.countDownTimerId = undefined;
+        }
+        this.nextRefreshIn = 0;
+    }
+
+    handleAutoRefreshChange(event) {
+        const period = parseInt(event.target.value, 10);
+        if (Number.isNaN(period)) {
+            this.autoRefreshPeriod = 0;
+        } else {
+            this.autoRefreshPeriod = period;
+        }
+
+        if (this.isDesktop) {
+            localStorage.setItem('posTableAutoRefresh', this.autoRefreshPeriod);
+        }
+
+        this.startAutoRefresh();
+
+        const message = this.autoRefreshPeriod > 0
+            ? `Auto-refresh set to ${this.autoRefreshPeriod / 1000}s`
+            : 'Auto-refresh disabled';
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Table refresh',
+            message,
+            variant: 'success'
+        }));
+    }
+
     handleRefresh() {
-        this.loadTables();
+        this.loadTables(false);
+    }
+
+    disconnectedCallback() {
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+        }
+        this.stopAutoRefresh();
     }
 
     get hasTables() {
         return this.tables && this.tables.length > 0;
+    }
+
+    get isAutoRefreshOff() {
+        return this.autoRefreshPeriod === 0;
+    }
+
+    get isAutoRefresh10() {
+        return this.autoRefreshPeriod === 10000;
+    }
+
+    get isAutoRefresh15() {
+        return this.autoRefreshPeriod === 15000;
+    }
+
+    get isAutoRefresh30() {
+        return this.autoRefreshPeriod === 30000;
+    }
+
+    get isAutoRefresh60() {
+        return this.autoRefreshPeriod === 60000;
     }
 
     get isSelectedAvailable() {
