@@ -130,6 +130,34 @@ public without sharing class MenuController {
     }
 
     @AuraEnabled
+    public static void deleteMenuCategory(String restaurantId, String categoryId) {
+        if (!Menu_Category__c.SObjectType.getDescribe().isDeletable()) {
+            throw new AuraHandledException('No delete permission for menu categories.');
+        }
+        Menu_Category__c category = [
+            SELECT Id, Restaurant__c
+            FROM Menu_Category__c
+            WHERE Id = :categoryId
+            LIMIT 1
+        ];
+        if (category.Restaurant__c != restaurantId) {
+            throw new AuraHandledException('Invalid category for this restaurant.');
+        }
+
+        Integer linkedItems = [
+            SELECT COUNT()
+            FROM Menu_Item__c
+            WHERE Restaurant__c = :restaurantId
+              AND Menu_Category__c = :categoryId
+        ];
+        if (linkedItems > 0) {
+            throw new AuraHandledException('Cannot delete category with existing menu items. Move or delete items first.');
+        }
+
+        delete category;
+    }
+
+    @AuraEnabled
     public static Integer bulkUpdateAvailability(String restaurantId, List<String> itemIds, Boolean isAvailable) {
         ensureUpdatable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
         List<Menu_Item__c> rows;

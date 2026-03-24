@@ -2,6 +2,7 @@ import { LightningElement, api } from 'lwc';
 
 export default class PosHeader extends LightningElement {
     @api restaurantName;
+    @api restaurantLogoUrl;
     @api currentView;
 
     get showBackButton() {

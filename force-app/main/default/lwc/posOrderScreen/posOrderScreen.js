@@ -22,7 +22,11 @@ export default class PosOrderScreen extends LightningElement {
     @track showCancelConfirm = false;
     @track mobileTab = 'menu';
     @track whatsappOptInLocal = false;
+    @track inlineToastMessage = '';
+    @track inlineToastType = 'add';
     isLoading = false;
+
+    _toastTimerId;
 
     _orderId;
     @api
@@ -35,11 +39,47 @@ export default class PosOrderScreen extends LightningElement {
     }
 
     connectedCallback() {
+        this._keyHandler = (e) => {
+            if (e.key === 'Escape' && this.showCancelConfirm) {
+                this.handleCloseCancelConfirm();
+            }
+        };
+        window.addEventListener('keydown', this._keyHandler);
+
         if (this._orderId) {
             this.loadOrder(this._orderId);
         } else {
             this.createNewOrder();
         }
+    }
+
+    disconnectedCallback() {
+        if (this._toastTimerId) {
+            clearTimeout(this._toastTimerId);
+        }
+        if (this._keyHandler) {
+            window.removeEventListener('keydown', this._keyHandler);
+        }
+    }
+
+    showInlineToast(message, type) {
+        if (this._toastTimerId) {
+            clearTimeout(this._toastTimerId);
+        }
+        this.inlineToastMessage = '';
+        this.inlineToastType = type || 'add';
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+            this.inlineToastMessage = message;
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            this._toastTimerId = setTimeout(() => {
+                this.inlineToastMessage = '';
+            }, 2200);
+        }, 10);
+    }
+
+    get inlineToastClass() {
+        return 'inline-toast' + (this.inlineToastType === 'remove' ? ' inline-toast-remove' : '');
     }
 
     async createNewOrder() {
@@ -118,6 +158,7 @@ export default class PosOrderScreen extends LightningElement {
                 notes: notes || ''
             });
             await this.refreshCartOnly();
+            this.showInlineToast('Item added to cart', 'add');
         } catch (err) {
             console.error('Add item error:', err);
         }
@@ -127,6 +168,7 @@ export default class PosOrderScreen extends LightningElement {
         try {
             await removeOrderItem({ orderItemId: event.detail.itemId });
             await this.refreshCartOnly();
+            this.showInlineToast('Item removed', 'remove');
         } catch (err) {
             console.error('Remove item error:', err);
         }
@@ -270,6 +312,14 @@ export default class PosOrderScreen extends LightningElement {
 
     get formattedSubtotal() { return '₹' + this.orderSubtotal; }
     get formattedTax() { return '₹' + this.taxAmount; }
+    get cgstAmount() { return this.taxAmount / 2; }
+    get sgstAmount() { return this.taxAmount / 2; }
+    get formattedCgst() { return '₹' + this.cgstAmount.toFixed(2); }
+    get formattedSgst() { return '₹' + this.sgstAmount.toFixed(2); }
+    get halfTaxRate() {
+        const rate = Number(this.taxRate || 0) / 2;
+        return Number.isInteger(rate) ? String(rate) : rate.toFixed(2);
+    }
     get formattedDiscount() { return '-₹' + this.discountAmount; }
     get formattedTotal() { return '₹' + this.orderTotal; }
 }

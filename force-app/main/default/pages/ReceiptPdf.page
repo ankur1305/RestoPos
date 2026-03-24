@@ -94,7 +94,8 @@
     </table>
     <div class="line"></div>
     <div class="row"><span>Subtotal:</span><span><apex:outputText value="{!fmtSubtotal}" escape="true"/></span></div>
-    <div class="row"><span>Tax:</span><span><apex:outputText value="{!fmtTax}" escape="true"/></span></div>
+    <div class="row"><span>CGST:</span><span><apex:outputText value="{!fmtCgst}" escape="true"/></span></div>
+    <div class="row"><span>SGST:</span><span><apex:outputText value="{!fmtSgst}" escape="true"/></span></div>
     <apex:outputPanel rendered="{!hasDiscount}">
         <div class="row"><span>Discount:</span><span><apex:outputText value="{!fmtDiscount}" escape="true"/></span></div>
     </apex:outputPanel>

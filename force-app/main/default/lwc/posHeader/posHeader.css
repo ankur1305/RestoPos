@@ -2,13 +2,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #162032, #1f2d45);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: #fff;
     padding: 0 1.25rem;
     height: 60px;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .header-left {
@@ -18,9 +21,19 @@
 }
 
 .header-title {
-    font-size: 1.0625rem;
+    font-size: var(--font-size-lg);
     font-weight: 600;
     margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.restaurant-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .header-right {
@@ -29,45 +42,59 @@
 }
 
 .back-btn {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #fff;
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s;
+    transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
 .back-btn:hover {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-2px);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
 }
 
 .nav-btn {
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    background: rgba(255,255,255,0.12);
-    border: none;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
     padding: 0.5rem 0.875rem;
-    border-radius: 8px;
-    font-size: 0.8125rem;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all var(--transition-base);
 }
 
 .nav-btn:hover {
-    background: rgba(255,255,255,0.24);
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn:active {
+    transform: scale(0.96);
 }
 
 .nav-btn.active {
     background: #ffffff;
-    color: #1f2d45;
+    color: var(--color-header-from);
+    border-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -77,7 +104,7 @@
     }
 
     .header-title {
-        font-size: 0.9375rem;
+        font-size: var(--font-size-md);
         max-width: 180px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -88,6 +115,12 @@
         gap: 0.5rem;
     }
 
+    .restaurant-logo {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+    }
+
     .back-btn {
         width: 32px;
         height: 32px;
@@ -95,7 +128,7 @@
 
     .nav-btn {
         padding: 0.375rem 0.625rem;
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
     }
 
     .manager-btn {

@@ -21,6 +21,10 @@ export default class RestoPosApp extends LightningElement {
         return this.restaurant ? this.restaurant.Name : 'RestoPos';
     }
 
+    get restaurantLogoUrl() {
+        return this.restaurant ? this.restaurant.Logo_URL__c : '';
+    }
+
     connectedCallback() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('rc');

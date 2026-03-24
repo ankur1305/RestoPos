@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Logo_URL__c</fullName>
-    <label>Logo URL</label>
+    <description>Legacy fallback URL. Preferred logo source is Files uploaded on Restaurant record.</description>
+    <inlineHelpText>Upload logo in Files on this Restaurant record. This URL is only a fallback.</inlineHelpText>
+    <label>Logo Image (Fallback URL)</label>
     <trackFeedHistory>false</trackFeedHistory>
     <type>Url</type>
 </CustomField>

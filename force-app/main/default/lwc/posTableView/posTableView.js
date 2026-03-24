@@ -24,6 +24,13 @@ export default class PosTableView extends LightningElement {
         this.resizeHandler = this.handleWindowResize.bind(this);
         window.addEventListener('resize', this.resizeHandler);
 
+        this._keyHandler = (e) => {
+            if (e.key === 'Escape' && this.showActions) {
+                this.handleCloseActions();
+            }
+        };
+        window.addEventListener('keydown', this._keyHandler);
+
         if (this.isDesktop) {
             const savedPeriod = parseInt(localStorage.getItem('posTableAutoRefresh'), 10);
             if (!Number.isNaN(savedPeriod)) {
@@ -247,6 +254,9 @@ export default class PosTableView extends LightningElement {
     disconnectedCallback() {
         if (this.resizeHandler) {
             window.removeEventListener('resize', this.resizeHandler);
+        }
+        if (this._keyHandler) {
+            window.removeEventListener('keydown', this._keyHandler);
         }
         this.stopAutoRefresh();
     }

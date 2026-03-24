@@ -1,8 +1,8 @@
 import { LightningElement, track } from 'lwc';
 
 export default class PosLogin extends LightningElement {
-    @track restaurantCode = '';
-    @track pin = '';
+    @track restaurantCode = 'TCH001';
+    @track pin = '1234';
 
     handleCodeChange(event) {
         this.restaurantCode = event.target.value.toUpperCase();

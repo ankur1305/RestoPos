@@ -151,6 +151,14 @@ export default class PosReceipt extends LightningElement {
     get formattedTax() {
         return '₹' + (this.receipt?.Tax_Amount__c || 0);
     }
+    get formattedCgst() {
+        const tax = this.receipt?.Tax_Amount__c || 0;
+        return '₹' + (tax / 2).toFixed(2);
+    }
+    get formattedSgst() {
+        const tax = this.receipt?.Tax_Amount__c || 0;
+        return '₹' + (tax / 2).toFixed(2);
+    }
     get formattedDiscount() {
         return '-₹' + (this.receipt?.Discount_Amount__c || 0);
     }

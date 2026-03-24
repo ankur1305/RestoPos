@@ -4,7 +4,6 @@ import getMenuItems from '@salesforce/apex/MenuController.getMenuItems';
 import searchMenuItems from '@salesforce/apex/MenuController.searchMenuItems';
 
 const ALL_CATEGORY_ID = 'ALL';
-const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 280;
 
 export default class PosMenuBrowser extends LightningElement {
@@ -15,7 +14,6 @@ export default class PosMenuBrowser extends LightningElement {
     @track decoratedItems = [];
     @track selectedCategoryId = ALL_CATEGORY_ID;
     @track searchTerm = '';
-    @track visibleCount = PAGE_SIZE;
     isLoading = false;
     searchDebounceId;
 
@@ -36,7 +34,6 @@ export default class PosMenuBrowser extends LightningElement {
                 categoryId: categoryId
             });
             this.decoratedItems = this.decorateItems(this.allItems);
-            this.visibleCount = PAGE_SIZE;
         } catch (err) {
             console.error('Load items error:', err);
         } finally {
@@ -85,7 +82,6 @@ export default class PosMenuBrowser extends LightningElement {
             });
             this.decoratedItems = this.decorateItems(this.allItems);
             this.selectedCategoryId = '';
-            this.visibleCount = PAGE_SIZE;
         } catch (err) {
             console.error('Search error:', err);
         }
@@ -109,25 +105,8 @@ export default class PosMenuBrowser extends LightningElement {
         }));
     }
 
-    handleLoadMore() {
-        this.visibleCount += PAGE_SIZE;
-    }
-
     get items() {
-        return this.decoratedItems.slice(0, this.visibleCount);
-    }
-
-    get hasMoreItems() {
-        return this.allItems.length > this.visibleCount;
-    }
-
-    get remainingCount() {
-        const remaining = this.allItems.length - this.visibleCount;
-        return remaining > PAGE_SIZE ? PAGE_SIZE : remaining;
-    }
-
-    get loadMoreLabel() {
-        return 'Show ' + this.remainingCount + ' more';
+        return this.decoratedItems;
     }
 
     get categoriesWithClass() {

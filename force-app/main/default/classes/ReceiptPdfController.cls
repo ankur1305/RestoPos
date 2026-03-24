@@ -113,6 +113,16 @@ public without sharing class ReceiptPdfController {
         return fmt(receipt == null ? null : receipt.Tax_Amount__c);
     }
 
+    public String getFmtCgst() {
+        Decimal tax = receipt == null || receipt.Tax_Amount__c == null ? 0 : receipt.Tax_Amount__c;
+        return fmt(tax / 2);
+    }
+
+    public String getFmtSgst() {
+        Decimal tax = receipt == null || receipt.Tax_Amount__c == null ? 0 : receipt.Tax_Amount__c;
+        return fmt(tax / 2);
+    }
+
     public String getFmtDiscount() {
         if (receipt == null || receipt.Discount_Amount__c == null) {
             return '₹0.00';

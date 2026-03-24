@@ -1,24 +1,29 @@
 <template>
-    <lightning-card title="Restaurant Snapshot" icon-name="custom:custom67">
-        <button class="slds-button slds-button_icon slds-button_icon-border" slot="actions" title="Refresh" onclick={handleRefresh}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-        </button>
+    <div class="snapshot-card">
+        <div class="snapshot-header">
+            <h2 class="snapshot-title">Restaurant Snapshot</h2>
+            <button class="refresh-btn" onclick={handleRefresh} title="Refresh">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            </button>
+        </div>
 
         <template lwc:if={isLoading}>
-            <div class="slds-p-around_large slds-align_absolute-center">
+            <div class="snapshot-loading">
                 <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
             </div>
         </template>
 
         <template lwc:elseif={hasError}>
-            <div class="slds-p-around_medium slds-text-color_error">Failed to load snapshot.</div>
+            <div class="snapshot-error">Failed to load snapshot.</div>
         </template>
 
         <template lwc:else>
             <div class="snapshot-grid">
-                <!-- Tables Section -->
                 <div class="snapshot-section">
-                    <h3 class="section-title">Tables</h3>
+                    <h3 class="section-title">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        Tables
+                    </h3>
                     <div class="stats-row">
                         <div class="stat-item">
                             <span class="stat-value">{totalTables}</span>
@@ -39,9 +44,11 @@
                     </div>
                 </div>
 
-                <!-- Menu Section -->
                 <div class="snapshot-section">
-                    <h3 class="section-title">Menu</h3>
+                    <h3 class="section-title">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                        Menu
+                    </h3>
                     <div class="stats-row">
                         <div class="stat-item">
                             <span class="stat-value">{totalCategories}</span>
@@ -54,12 +61,14 @@
                     </div>
                 </div>
 
-                <!-- Active Orders Section -->
                 <div class="snapshot-section">
-                    <h3 class="section-title">Active Orders</h3>
+                    <h3 class="section-title">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                        Active Orders
+                    </h3>
                     <div class="stats-row">
-                        <div class="stat-item">
-                            <span class="stat-value stat-highlight">{activeOrders}</span>
+                        <div class="stat-item stat-highlight">
+                            <span class="stat-value">{activeOrders}</span>
                             <span class="stat-label">Open Orders</span>
                         </div>
                         <template lwc:if={hasActiveOrders}>
@@ -71,16 +80,18 @@
                     </div>
                 </div>
 
-                <!-- Today's Stats -->
                 <div class="snapshot-section">
-                    <h3 class="section-title">Today</h3>
+                    <h3 class="section-title">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Today
+                    </h3>
                     <div class="stats-row">
                         <div class="stat-item">
                             <span class="stat-value">{todayOrders}</span>
                             <span class="stat-label">Orders Completed</span>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-value stat-revenue">{todayRevenue}</span>
+                        <div class="stat-item stat-revenue">
+                            <span class="stat-value">{todayRevenue}</span>
                             <span class="stat-label">Revenue</span>
                         </div>
                         <div class="stat-item">
@@ -91,5 +102,5 @@
                 </div>
             </div>
         </template>
-    </lightning-card>
+    </div>
 </template>

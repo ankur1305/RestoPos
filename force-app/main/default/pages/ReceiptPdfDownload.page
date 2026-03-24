@@ -215,8 +215,12 @@
             <td class="value"><apex:outputText value="{!fmtSubtotal}" escape="true"/></td>
         </tr>
         <tr>
-            <td class="label">Tax</td>
-            <td class="value"><apex:outputText value="{!fmtTax}" escape="true"/></td>
+            <td class="label">CGST</td>
+            <td class="value"><apex:outputText value="{!fmtCgst}" escape="true"/></td>
+        </tr>
+        <tr>
+            <td class="label">SGST</td>
+            <td class="value"><apex:outputText value="{!fmtSgst}" escape="true"/></td>
         </tr>
         <apex:outputPanel layout="none" rendered="{!hasDiscount}">
             <tr>

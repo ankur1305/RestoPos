@@ -261,11 +261,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Restaurant__c.Logo_URL__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Restaurant__c.PIN__c</field>
         <readable>true</readable>
     </fieldPermissions>
