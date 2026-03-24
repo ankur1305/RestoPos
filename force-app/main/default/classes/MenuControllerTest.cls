@@ -47,4 +47,36 @@ private class MenuControllerTest {
         System.assertEquals(1, items.size());
         System.assertEquals('Paneer Tikka', items[0].Name);
     }
+
+    @IsTest
+    static void testManagerMenuMethods() {
+        Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
+        Menu_Category__c cat = [SELECT Id FROM Menu_Category__c LIMIT 1];
+        Menu_Item__c item = [SELECT Id FROM Menu_Item__c LIMIT 1];
+
+        Test.startTest();
+        MenuController.ManagerMenuData data = MenuController.getManagerMenuData(r.Id);
+        Menu_Category__c newCat = MenuController.upsertMenuCategory(r.Id, null, 'Dessert', 2, 'utility:food_and_drink', true);
+        Menu_Item__c savedItem = MenuController.upsertMenuItem(
+            r.Id,
+            item.Id,
+            'Paneer Tikka Updated',
+            cat.Id,
+            300,
+            'Updated',
+            false,
+            true,
+            2,
+            null
+        );
+        Integer updated = MenuController.bulkUpdateAvailability(r.Id, new List<String>{ item.Id }, true);
+        Integer categoryUpdated = MenuController.setCategoryAvailability(r.Id, cat.Id, false);
+        Test.stopTest();
+
+        System.assert(data.categories.size() > 0);
+        System.assertNotEquals(null, newCat.Id);
+        System.assertEquals('Paneer Tikka Updated', savedItem.Name);
+        System.assertEquals(1, updated);
+        System.assert(categoryUpdated > 0);
+    }
 }

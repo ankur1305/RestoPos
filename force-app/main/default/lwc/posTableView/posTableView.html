@@ -1,7 +1,10 @@
 <template>
     <div class="table-view">
         <div class="view-header">
-            <h2 class="view-title">Tables</h2>
+            <div class="section-header">
+                <h2 class="view-title">Tables</h2>
+                <p class="view-subtitle">Live floor status and quick table actions</p>
+            </div>
             <template if:true={isDesktop}>
                 <div class="auto-refresh-control">
                     <label for="autoRefreshSelect">Auto-refresh:</label>
@@ -52,6 +55,12 @@
                         </template>
                     </div>
                 </template>
+            </template>
+            <template if:false={hasTables}>
+                <div class="empty-state">
+                    <h3>No tables configured yet</h3>
+                    <p>Create tables from manager console to start taking orders.</p>
+                </div>
             </template>
         </div>
 

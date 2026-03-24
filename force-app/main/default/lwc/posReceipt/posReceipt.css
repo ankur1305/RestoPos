@@ -3,6 +3,22 @@
     margin: 0 auto;
 }
 
+.receipt-head {
+    margin-bottom: 0.75rem;
+}
+
+.receipt-head h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+
+.receipt-head p {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: #64748b;
+}
+
 .loading {
     display: flex;
     justify-content: center;
@@ -31,12 +47,12 @@
 }
 
 .action-btn.primary {
-    background: #2563eb;
+    background: linear-gradient(135deg, #3155d4, #2743a9);
     color: #fff;
 }
 
 .action-btn.primary:hover {
-    background: #1d4ed8;
+    background: linear-gradient(135deg, #3a5fdd, #2b48b3);
 }
 
 .action-btn:disabled {
@@ -64,10 +80,16 @@
     width: 320px;
     padding: 1.5rem;
     border-radius: 4px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(22, 32, 50, 0.12);
     font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
     color: #000;
+}
+
+.popup-hint {
+    margin: -0.25rem 0 0.9rem;
+    font-size: 0.75rem;
+    color: #64748b;
 }
 
 .center {

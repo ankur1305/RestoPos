@@ -53,6 +53,13 @@
                     onbacktotables={handleBackToTables}
                 ></c-pos-receipt>
             </template>
+
+            <template lwc:if={isManagerView}>
+                <c-pos-manager-desktop
+                    restaurant-id={restaurant.Id}
+                    currency-code={restaurant.Currency_Code__c}
+                ></c-pos-manager-desktop>
+            </template>
         </div>
     </div>
 </template>

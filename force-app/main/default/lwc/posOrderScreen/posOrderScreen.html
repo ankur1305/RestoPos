@@ -11,6 +11,7 @@
             <div class="menu-panel" data-mobile-tab="menu">
                 <div class="panel-header desktop-only">
                     <h3 class="panel-title">Menu</h3>
+                    <p class="panel-subtitle">Browse categories and add items quickly</p>
                 </div>
                 <c-pos-menu-browser
                     restaurant-id={restaurantId}
@@ -79,7 +80,8 @@
                     <template lwc:else>
                         <div class="empty-order">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-                            <p>Tap items from the menu to add them</p>
+                            <p>No items in this order yet</p>
+                            <small>Tap menu items to add them to the cart.</small>
                         </div>
                     </template>
                 </div>

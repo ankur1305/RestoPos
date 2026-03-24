@@ -61,4 +61,20 @@ private class TableControllerTest {
         }
         Test.stopTest();
     }
+
+    @IsTest
+    static void testUpsertAndTransferOrder() {
+        Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
+        List<Restaurant_Table__c> tables = [SELECT Id FROM Restaurant_Table__c ORDER BY CreatedDate ASC LIMIT 2];
+        POS_Order__c ord = OrderController.createOrder(r.Id, tables[0].Id, null);
+
+        Test.startTest();
+        Restaurant_Table__c saved = TableController.upsertTable(r.Id, null, 'Patio-1', 6, 20, 'Available');
+        TableController.transferCurrentOrder(tables[0].Id, tables[1].Id);
+        Test.stopTest();
+
+        System.assertNotEquals(null, saved.Id);
+        POS_Order__c movedOrder = [SELECT Table__c FROM POS_Order__c WHERE Id = :ord.Id];
+        System.assertEquals(tables[1].Id, movedOrder.Table__c);
+    }
 }

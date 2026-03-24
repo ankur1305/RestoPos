@@ -6,6 +6,10 @@
             </div>
         </template>
         <template lwc:else>
+            <div class="receipt-head">
+                <h3>Receipt Center</h3>
+                <p>Download customer-ready invoice formats instantly.</p>
+            </div>
             <div class="receipt-actions">
                 <button type="button" class="action-btn primary" onclick={handleDownloadReceipt} disabled={isDownloadingAny}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
@@ -21,6 +25,7 @@
                     Back to Tables
                 </button>
             </div>
+            <p class="popup-hint">If download does not open, enable pop-ups and retry.</p>
 
             <div class="receipt-wrapper">
                 <div class="receipt-paper">

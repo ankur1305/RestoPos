@@ -15,4 +15,16 @@ export default class PosHeader extends LightningElement {
     handleNavTables() {
         this.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'tables' } }));
     }
+
+    handleNavManager() {
+        this.dispatchEvent(new CustomEvent('navigate', { detail: { view: 'manager' } }));
+    }
+
+    get tablesBtnClass() {
+        return 'nav-btn' + (this.currentView === 'tables' ? ' active' : '');
+    }
+
+    get managerBtnClass() {
+        return 'nav-btn manager-btn' + (this.currentView === 'manager' ? ' active' : '');
+    }
 }

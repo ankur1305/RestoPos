@@ -50,4 +50,93 @@ public without sharing class TableController {
         update tbl;
         return tbl;
     }
+
+    @AuraEnabled
+    public static List<Restaurant_Table__c> getManagerTables(String restaurantId) {
+        ensureReadable(Restaurant_Table__c.SObjectType.getDescribe(), 'Restaurant tables');
+        return getTables(restaurantId);
+    }
+
+    @AuraEnabled
+    public static Restaurant_Table__c upsertTable(
+        String restaurantId,
+        String tableId,
+        String name,
+        Integer capacity,
+        Integer sortOrder,
+        String status
+    ) {
+        ensureCreateOrUpdate(tableId, Restaurant_Table__c.SObjectType.getDescribe(), 'table');
+        Restaurant_Table__c recordToSave;
+        if (String.isBlank(tableId)) {
+            recordToSave = new Restaurant_Table__c();
+            recordToSave.Restaurant__c = restaurantId;
+        } else {
+            recordToSave = [SELECT Id, Restaurant__c FROM Restaurant_Table__c WHERE Id = :tableId LIMIT 1];
+            if (recordToSave.Restaurant__c != restaurantId) {
+                throw new AuraHandledException('Invalid table for this restaurant.');
+            }
+        }
+        recordToSave.Name = name;
+        recordToSave.Capacity__c = capacity;
+        recordToSave.Sort_Order__c = sortOrder;
+        recordToSave.Status__c = String.isBlank(status) ? 'Available' : status;
+        upsert recordToSave;
+        return recordToSave;
+    }
+
+    @AuraEnabled
+    public static void transferCurrentOrder(String sourceTableId, String targetTableId) {
+        ensureUpdatable(Restaurant_Table__c.SObjectType.getDescribe(), 'Restaurant tables');
+        ensureUpdatable(POS_Order__c.SObjectType.getDescribe(), 'Orders');
+        Restaurant_Table__c sourceTable = [
+            SELECT Id, Current_Order__c, Restaurant__c
+            FROM Restaurant_Table__c
+            WHERE Id = :sourceTableId
+            LIMIT 1
+        ];
+        Restaurant_Table__c targetTable = [
+            SELECT Id, Current_Order__c, Restaurant__c
+            FROM Restaurant_Table__c
+            WHERE Id = :targetTableId
+            LIMIT 1
+        ];
+        if (sourceTable.Restaurant__c != targetTable.Restaurant__c) {
+            throw new AuraHandledException('Tables must belong to same restaurant.');
+        }
+        if (sourceTable.Current_Order__c == null) {
+            throw new AuraHandledException('Source table has no active order.');
+        }
+        if (targetTable.Current_Order__c != null) {
+            throw new AuraHandledException('Target table already has an order.');
+        }
+
+        update new POS_Order__c(Id = sourceTable.Current_Order__c, Table__c = targetTable.Id);
+        update new List<Restaurant_Table__c>{
+            new Restaurant_Table__c(Id = sourceTable.Id, Current_Order__c = null, Status__c = 'Available'),
+            new Restaurant_Table__c(Id = targetTable.Id, Current_Order__c = sourceTable.Current_Order__c, Status__c = 'Occupied')
+        };
+    }
+
+    private static void ensureReadable(Schema.DescribeSObjectResult describeResult, String label) {
+        if (!describeResult.isAccessible()) {
+            throw new AuraHandledException(label + ' are not readable for this user.');
+        }
+    }
+
+    private static void ensureUpdatable(Schema.DescribeSObjectResult describeResult, String label) {
+        if (!describeResult.isUpdateable()) {
+            throw new AuraHandledException(label + ' are not updateable for this user.');
+        }
+    }
+
+    private static void ensureCreateOrUpdate(String idValue, Schema.DescribeSObjectResult describeResult, String label) {
+        if (String.isBlank(idValue)) {
+            if (!describeResult.isCreateable()) {
+                throw new AuraHandledException('No create permission for ' + label + '.');
+            }
+        } else if (!describeResult.isUpdateable()) {
+            throw new AuraHandledException('No update permission for ' + label + '.');
+        }
+    }
 }

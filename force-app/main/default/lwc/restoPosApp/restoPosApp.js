@@ -15,6 +15,7 @@ export default class RestoPosApp extends LightningElement {
     get isTableView() { return this.currentView === 'tables'; }
     get isOrderView() { return this.currentView === 'order'; }
     get isReceiptView() { return this.currentView === 'receipt'; }
+    get isManagerView() { return this.currentView === 'manager'; }
 
     get restaurantName() {
         return this.restaurant ? this.restaurant.Name : 'RestoPos';

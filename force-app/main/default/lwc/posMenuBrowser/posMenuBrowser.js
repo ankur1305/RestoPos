@@ -12,6 +12,7 @@ export default class PosMenuBrowser extends LightningElement {
     @api currencyCode;
     @track categories = [];
     @track allItems = [];
+    @track decoratedItems = [];
     @track selectedCategoryId = ALL_CATEGORY_ID;
     @track searchTerm = '';
     @track visibleCount = PAGE_SIZE;
@@ -34,6 +35,7 @@ export default class PosMenuBrowser extends LightningElement {
                 restaurantId: this.restaurantId,
                 categoryId: categoryId
             });
+            this.decoratedItems = this.decorateItems(this.allItems);
             this.visibleCount = PAGE_SIZE;
         } catch (err) {
             console.error('Load items error:', err);
@@ -81,6 +83,7 @@ export default class PosMenuBrowser extends LightningElement {
                 restaurantId: this.restaurantId,
                 searchTerm: this.searchTerm
             });
+            this.decoratedItems = this.decorateItems(this.allItems);
             this.selectedCategoryId = '';
             this.visibleCount = PAGE_SIZE;
         } catch (err) {
@@ -95,6 +98,9 @@ export default class PosMenuBrowser extends LightningElement {
     }
 
     handleAddItem(event) {
+        if (event.currentTarget.dataset.available === 'false') {
+            return;
+        }
         const menuItemId = event.currentTarget.dataset.id;
         this.dispatchEvent(new CustomEvent('additem', {
             detail: { menuItemId, quantity: 1, notes: '' },
@@ -108,7 +114,7 @@ export default class PosMenuBrowser extends LightningElement {
     }
 
     get items() {
-        return this.allItems.slice(0, this.visibleCount);
+        return this.decoratedItems.slice(0, this.visibleCount);
     }
 
     get hasMoreItems() {
@@ -140,4 +146,13 @@ export default class PosMenuBrowser extends LightningElement {
     get hasItems() {
         return this.items && this.items.length > 0;
     }
+
+    decorateItems(rawItems) {
+        return (rawItems || []).map((item) => ({
+            ...item,
+            itemClass: 'menu-item-row' + (item.Is_Available__c ? '' : ' sold-out'),
+            isDisabled: !item.Is_Available__c
+        }));
+    }
+
 }

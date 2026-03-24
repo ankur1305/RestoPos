@@ -1,0 +1,163 @@
+<template>
+    <template lwc:if={isDesktop}>
+        <section class="manager-wrap">
+            <lightning-card title="Manager Console">
+                <div class="toolbar">
+                    <div class="manager-head">
+                        <h3>Operations Workspace</h3>
+                        <p>Manage tables, menu and reporting in one place.</p>
+                    </div>
+                    <lightning-radio-group
+                        type="button"
+                        options={tabOptions}
+                        value={activeTab}
+                        onchange={handleTabChange}
+                    ></lightning-radio-group>
+                </div>
+
+                <template lwc:if={isLoading}>
+                    <lightning-spinner size="small" alternative-text="Working"></lightning-spinner>
+                </template>
+
+                <template lwc:if={isTablesTab}>
+                    <div class="grid">
+                        <lightning-card title="Table Form">
+                            <div class="pad form-col">
+                                <lightning-input label="Name" name="Name" value={tableForm.Name} onchange={handleTableInput}></lightning-input>
+                                <lightning-input type="number" label="Capacity" name="Capacity__c" value={tableForm.Capacity__c} onchange={handleTableInput}></lightning-input>
+                                <lightning-input type="number" label="Sort Order" name="Sort_Order__c" value={tableForm.Sort_Order__c} onchange={handleTableInput}></lightning-input>
+                                <lightning-combobox label="Status" name="Status__c" value={tableForm.Status__c} options={tableStatusOptions} onchange={handleTableInput}></lightning-combobox>
+                                <div class="row action-row">
+                                    <lightning-button variant="brand" label="Save Table" onclick={saveTable}></lightning-button>
+                                    <lightning-button label="Reset" onclick={resetTableForm}></lightning-button>
+                                </div>
+                            </div>
+                        </lightning-card>
+                        <lightning-card title="Tables">
+                            <div class="pad list">
+                                <div class="transfer-box">
+                                    <lightning-combobox label="Source table (with active order)" options={occupiedTableOptions} value={transferSourceTableId} onchange={handleTransferSourceChange}></lightning-combobox>
+                                    <lightning-combobox label="Target available table" options={availableTableOptions} value={transferTargetTableId} onchange={handleTransferTargetChange}></lightning-combobox>
+                                    <lightning-button label="Transfer Active Order" onclick={transferOrderFromSelectors}></lightning-button>
+                                </div>
+                                <template for:each={tables} for:item="table">
+                                    <div key={table.Id} class="list-item">
+                                        <div>
+                                            <strong>{table.Name}</strong> ({table.Status__c}) - Cap {table.Capacity__c}
+                                        </div>
+                                        <div class="row">
+                                            <lightning-button label="Edit" data-id={table.Id} onclick={editTable}></lightning-button>
+                                            <lightning-button label="Reserve" data-id={table.Id} data-status="Reserved" onclick={updateTableStatus}></lightning-button>
+                                            <lightning-button label="Available" data-id={table.Id} data-status="Available" onclick={updateTableStatus}></lightning-button>
+                                            <lightning-button label="Out of Service" data-id={table.Id} data-status="Out of Service" onclick={updateTableStatus}></lightning-button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:if={tables.length}></template>
+                                <template lwc:else>
+                                    <div class="empty-inline">No tables yet.</div>
+                                </template>
+                            </div>
+                        </lightning-card>
+                    </div>
+                </template>
+
+                <template lwc:if={isMenuTab}>
+                    <div class="grid">
+                        <lightning-card title="Category">
+                            <div class="pad form-col">
+                                <lightning-input label="Name" name="Name" value={categoryForm.Name} onchange={handleCategoryInput}></lightning-input>
+                                <lightning-input type="number" label="Sort Order" name="Sort_Order__c" value={categoryForm.Sort_Order__c} onchange={handleCategoryInput}></lightning-input>
+                                <lightning-input label="Icon" name="Icon__c" value={categoryForm.Icon__c} onchange={handleCategoryInput}></lightning-input>
+                                <lightning-input type="checkbox" label="Active" name="Is_Active__c" checked={categoryForm.Is_Active__c} onchange={handleCategoryInput}></lightning-input>
+                                <lightning-button variant="brand" label="Save Category" onclick={saveCategory}></lightning-button>
+                            </div>
+                            <div class="pad list">
+                                <template for:each={menuCategories} for:item="cat">
+                                    <div key={cat.Id} class="list-item row">
+                                        <span>{cat.Name}</span>
+                                        <lightning-button label="Edit" data-id={cat.Id} onclick={editCategory}></lightning-button>
+                                    </div>
+                                </template>
+                                <template lwc:if={menuCategories.length}></template>
+                                <template lwc:else>
+                                    <div class="empty-inline">No categories found.</div>
+                                </template>
+                            </div>
+                        </lightning-card>
+                        <lightning-card title="Menu Item">
+                            <div class="pad form-col">
+                                <lightning-input label="Name" name="Name" value={itemForm.Name} onchange={handleItemInput}></lightning-input>
+                                <lightning-combobox label="Category" name="Menu_Category__c" value={itemForm.Menu_Category__c} options={categoryOptions} onchange={handleItemInput}></lightning-combobox>
+                                <lightning-input type="number" label="Price" name="Price__c" value={itemForm.Price__c} onchange={handleItemInput}></lightning-input>
+                                <lightning-input label="Description" name="Description__c" value={itemForm.Description__c} onchange={handleItemInput}></lightning-input>
+                                <lightning-input type="toggle" label="Available" name="Is_Available__c" checked={itemForm.Is_Available__c} onchange={handleItemInput}></lightning-input>
+                                <lightning-input type="checkbox" label="Vegetarian" name="Is_Vegetarian__c" checked={itemForm.Is_Vegetarian__c} onchange={handleItemInput}></lightning-input>
+                                <lightning-button variant="brand" label="Save Item" onclick={saveItem}></lightning-button>
+                            </div>
+                            <div class="pad availability-strip">
+                                <div class="availability-actions">
+                                    <lightning-button variant="destructive" label="Mark All Sold Out" onclick={markAllSoldOut}></lightning-button>
+                                    <lightning-button variant="success" label="Reset All Available" onclick={markAllAvailable}></lightning-button>
+                                </div>
+                                <div class="availability-actions">
+                                    <lightning-combobox label="Category" value={selectedCategoryId} options={categoryOptions} onchange={handleCategoryFilter}></lightning-combobox>
+                                    <lightning-button label="Mark Category Sold Out" onclick={markCategorySoldOut}></lightning-button>
+                                </div>
+                            </div>
+                            <div class="pad list">
+                                <template for:each={menuItems} for:item="item">
+                                    <div key={item.Id} class="list-item row">
+                                        <span>{item.Name} - {item.Price__c} <strong>({item.Is_Available__c})</strong></span>
+                                        <div class="row">
+                                            <lightning-button label="Edit" data-id={item.Id} onclick={editItem}></lightning-button>
+                                            <lightning-button label="Delete" data-id={item.Id} onclick={removeItem}></lightning-button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:if={menuItems.length}></template>
+                                <template lwc:else>
+                                    <div class="empty-inline">No menu items found.</div>
+                                </template>
+                            </div>
+                        </lightning-card>
+                    </div>
+                </template>
+
+                <template lwc:if={isReportsTab}>
+                    <div class="pad">
+                        <div class="row">
+                            <lightning-input type="date" label="Start" name="startDate" onchange={handleFilterChange}></lightning-input>
+                            <lightning-input type="date" label="End" name="endDate" onchange={handleFilterChange}></lightning-input>
+                            <lightning-button variant="brand" label="Apply" onclick={applyReportFilter}></lightning-button>
+                        </div>
+                        <div class="kpis">
+                            <div class="kpi"><span>Orders</span><strong>{reportData.orderCount}</strong></div>
+                            <div class="kpi"><span>Revenue</span><strong>{reportData.revenue}</strong></div>
+                            <div class="kpi"><span>Discounts</span><strong>{reportData.discountAmount}</strong></div>
+                            <div class="kpi"><span>AOV</span><strong>{reportData.avgOrderValue}</strong></div>
+                        </div>
+                        <lightning-card title="Top Items">
+                            <div class="pad list">
+                                <template for:each={reportData.topItems} for:item="row">
+                                    <div key={row.itemName} class="list-item">
+                                        {row.itemName} - Qty {row.quantity} - {row.revenue}
+                                    </div>
+                                </template>
+                                <template lwc:if={reportData.topItems.length}></template>
+                                <template lwc:else>
+                                    <div class="empty-inline">No sales data for selected dates.</div>
+                                </template>
+                            </div>
+                        </lightning-card>
+                    </div>
+                </template>
+            </lightning-card>
+        </section>
+    </template>
+    <template lwc:else>
+        <lightning-card title="Manager Console">
+            <div class="pad">Manager console is available only on desktop (minimum 1024px width).</div>
+        </lightning-card>
+    </template>
+</template>

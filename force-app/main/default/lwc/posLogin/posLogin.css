@@ -7,11 +7,11 @@
 
 .login-card {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 2.5rem;
     width: 100%;
     max-width: 380px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 30px rgba(22, 32, 50, 0.12);
     text-align: center;
 }
 
@@ -20,7 +20,7 @@
 }
 
 .login-title {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
     font-weight: 700;
     color: #1e293b;
     margin: 0.25rem 0 0.25rem;
@@ -29,7 +29,13 @@
 .login-subtitle {
     font-size: 0.875rem;
     color: #64748b;
-    margin: 0 0 2rem;
+    margin: 0 0 0.35rem;
+}
+
+.login-helper {
+    margin: 0 0 1.75rem;
+    font-size: 0.8125rem;
+    color: #94a3b8;
 }
 
 .login-form {
@@ -68,7 +74,7 @@
 .login-btn {
     width: 100%;
     padding: 0.875rem;
-    background: #2563eb;
+    background: linear-gradient(135deg, #3155d4, #2743a9);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -80,7 +86,7 @@
 }
 
 .login-btn:hover {
-    background: #1d4ed8;
+    background: linear-gradient(135deg, #3a5fdd, #2b48b3);
 }
 
 @media (max-width: 768px) {

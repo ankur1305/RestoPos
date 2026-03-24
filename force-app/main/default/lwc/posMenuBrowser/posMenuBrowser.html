@@ -10,6 +10,10 @@
                 oninput={handleSearch}
             />
         </div>
+        <div class="menu-section-head">
+            <h4>Menu Items</h4>
+            <span>Tap + to add quickly</span>
+        </div>
 
         <div class="category-tabs">
             <template for:each={categoriesWithClass} for:item="cat">
@@ -28,7 +32,7 @@
             </template>
             <template lwc:elseif={hasItems}>
                 <template for:each={items} for:item="item">
-                    <div key={item.Id} class="menu-item-row" data-id={item.Id} onclick={handleAddItem}>
+                    <div key={item.Id} class={item.itemClass} data-id={item.Id} data-available={item.Is_Available__c} onclick={handleAddItem}>
                         <div class="item-left">
                             <span class="veg-indicator">
                                 <template lwc:if={item.Is_Vegetarian__c}>
@@ -40,6 +44,12 @@
                             </span>
                             <div class="item-info">
                                 <span class="item-name">{item.Name}</span>
+                                <template lwc:if={item.Is_Available__c}>
+                                    <span class="availability-tag">Available</span>
+                                </template>
+                                <template lwc:else>
+                                    <span class="availability-tag sold-out-tag">Sold out - cannot add</span>
+                                </template>
                                 <template lwc:if={item.Description__c}>
                                     <span class="item-desc">{item.Description__c}</span>
                                 </template>
@@ -47,13 +57,16 @@
                         </div>
                         <div class="item-right">
                             <span class="item-price">₹{item.Price__c}</span>
-                            <button class="add-btn">+</button>
+                            <button class="add-btn" disabled={item.isDisabled}>+</button>
                         </div>
                     </div>
                 </template>
             </template>
             <template lwc:else>
-                <div class="empty-menu">No items found</div>
+                <div class="empty-menu">
+                    <h5>No items found</h5>
+                    <p>Try another category or clear the search.</p>
+                </div>
             </template>
 
             <template lwc:if={hasMoreItems}>
