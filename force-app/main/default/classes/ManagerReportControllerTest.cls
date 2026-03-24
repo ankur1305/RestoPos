@@ -24,12 +24,18 @@ private class ManagerReportControllerTest {
         ManagerReportController.ReportPayload reportData = ManagerReportController.getManagerReport(
             restaurant.Id,
             Date.today().addDays(-1),
-            Date.today().addDays(1)
+            Date.today().addDays(1),
+            'custom',
+            null,
+            null,
+            false
         );
         Test.stopTest();
 
-        System.assert(reportData.orderCount >= 1);
-        System.assertNotEquals(null, reportData.revenue);
+        System.assert(reportData.summary.orderCount >= 1);
+        System.assertNotEquals(null, reportData.summary.revenue);
         System.assert(reportData.topItems.size() >= 1);
+        System.assertNotEquals(null, reportData.categoryMix);
+        System.assertNotEquals(null, reportData.paymentMix);
     }
 }

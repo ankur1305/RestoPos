@@ -5,7 +5,7 @@ public without sharing class ReceiptController {
         POS_Order__c ord = [
             SELECT Id, Name, Subtotal__c, Tax_Amount__c,
                    Discount_Amount__c, Total_Amount__c,
-                   Restaurant__c
+                   Restaurant__c, Payment_Method__c
             FROM POS_Order__c
             WHERE Id = :orderId
         ];
@@ -18,7 +18,8 @@ public without sharing class ReceiptController {
             Subtotal__c = ord.Subtotal__c,
             Tax_Amount__c = ord.Tax_Amount__c,
             Discount_Amount__c = ord.Discount_Amount__c,
-            Total_Amount__c = ord.Total_Amount__c
+            Total_Amount__c = ord.Total_Amount__c,
+            Payment_Method__c = ord.Payment_Method__c
         );
         insert receipt;
 
@@ -49,6 +50,8 @@ public without sharing class ReceiptController {
                    POS_Order__c, POS_Order__r.Name,
                    POS_Order__r.Table__r.Name,
                    POS_Order__r.Order_DateTime__c,
+                   POS_Order__r.Payment_Method__c,
+                   POS_Order__r.Payment_Status__c,
                    POS_Order__r.Customer__r.Name,
                    POS_Order__r.Customer__r.Phone__c,
                    Restaurant__r.Name, Restaurant__r.Address__c,

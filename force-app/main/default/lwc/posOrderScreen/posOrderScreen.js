@@ -203,6 +203,7 @@ export default class PosOrderScreen extends LightningElement {
             }));
         } catch (err) {
             console.error('Generate bill error:', err);
+            this.showToast('Error', err?.body?.message || 'Failed to generate bill.', 'error');
         } finally {
             this.isLoading = false;
         }
@@ -322,4 +323,5 @@ export default class PosOrderScreen extends LightningElement {
     }
     get formattedDiscount() { return '-₹' + this.discountAmount; }
     get formattedTotal() { return '₹' + this.orderTotal; }
+
 }

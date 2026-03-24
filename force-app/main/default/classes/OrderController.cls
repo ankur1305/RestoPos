@@ -136,6 +136,7 @@ public without sharing class OrderController {
             SELECT Id, Name, Status__c, Order_DateTime__c,
                    Subtotal__c, Tax_Amount__c, Discount_Percent__c,
                    Discount_Amount__c, Total_Amount__c,
+                   Payment_Method__c, Payment_Status__c,
                    Customer_Name__c, Notes__c, Item_Count__c,
                    Customer__c, Customer__r.Name, Customer__r.Phone__c,
                    Customer__r.Visit_Count__c,
@@ -202,6 +203,24 @@ public without sharing class OrderController {
     }
 
     @AuraEnabled
+    public static void updateOrderPaymentDetails(String orderId, String paymentMethod, String paymentStatus) {
+        if (String.isBlank(orderId)) {
+            throw new AuraHandledException('Order id is required.');
+        }
+        if (String.isBlank(paymentMethod)) {
+            throw new AuraHandledException('Payment method is required.');
+        }
+        if (String.isBlank(paymentStatus)) {
+            throw new AuraHandledException('Payment status is required.');
+        }
+        update new POS_Order__c(
+            Id = orderId,
+            Payment_Method__c = paymentMethod,
+            Payment_Status__c = paymentStatus
+        );
+    }
+
+    @AuraEnabled
     public static POS_Order__c applyDiscount(String orderId, Decimal discountPercent) {
         POS_Order__c ord = [
             SELECT Id, Subtotal__c, Restaurant__r.Tax_Rate__c
@@ -224,7 +243,10 @@ public without sharing class OrderController {
 
     @AuraEnabled
     public static Receipt__c closeOrder(String orderId) {
-        POS_Order__c ord = [SELECT Id, Customer__c, Table__c FROM POS_Order__c WHERE Id = :orderId];
+        POS_Order__c ord = [SELECT Id, Customer__c, Table__c, Payment_Method__c, Payment_Status__c FROM POS_Order__c WHERE Id = :orderId];
+        if (String.isBlank(ord.Payment_Status__c)) {
+            ord.Payment_Status__c = 'Pending';
+        }
         ord.Status__c = 'Served';
         update ord;
 

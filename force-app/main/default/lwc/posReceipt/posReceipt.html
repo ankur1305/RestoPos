@@ -25,6 +25,29 @@
                     Back to Tables
                 </button>
             </div>
+            <div class="payment-update-card">
+                <h4>Payment Update</h4>
+                <div class="payment-update-grid">
+                    <lightning-combobox
+                        name="method"
+                        label="Payment Method"
+                        value={paymentForm.method}
+                        options={paymentMethodOptions}
+                        onchange={handlePaymentFieldChange}
+                    ></lightning-combobox>
+                    <lightning-combobox
+                        name="status"
+                        label="Payment Status"
+                        value={paymentForm.status}
+                        options={paymentStatusOptions}
+                        onchange={handlePaymentFieldChange}
+                    ></lightning-combobox>
+                    <button type="button" class="action-btn primary payment-save-btn" onclick={handleSavePayment} disabled={isSavingPayment}>
+                        <template lwc:if={isSavingPayment}>Saving…</template>
+                        <template lwc:else>Update Payment</template>
+                    </button>
+                </div>
+            </div>
             <p class="popup-hint">If download does not open, enable pop-ups and retry.</p>
 
             <div class="receipt-wrapper">

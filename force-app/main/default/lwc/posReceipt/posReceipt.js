@@ -2,13 +2,16 @@ import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getReceiptData from '@salesforce/apex/ReceiptController.getReceiptData';
 import getReceiptPdfBase64 from '@salesforce/apex/ReceiptController.getReceiptPdfBase64';
+import updateOrderPaymentDetails from '@salesforce/apex/OrderController.updateOrderPaymentDetails';
 
 export default class PosReceipt extends LightningElement {
     _receiptId;
     @track receipt;
     @track items = [];
+    @track paymentForm = { method: '', status: 'Pending' };
     isLoading = true;
     downloadFormatInProgress = null;
+    isSavingPayment = false;
 
     @api
     get receiptId() {
@@ -28,6 +31,10 @@ export default class PosReceipt extends LightningElement {
             if (result) {
                 this.receipt = result.receipt;
                 this.items = result.items || [];
+                this.paymentForm = {
+                    method: this.receipt?.POS_Order__r?.Payment_Method__c || '',
+                    status: this.receipt?.POS_Order__r?.Payment_Status__c || 'Pending'
+                };
             }
         } catch (err) {
             console.error('Receipt load error:', err);
@@ -106,6 +113,42 @@ export default class PosReceipt extends LightningElement {
 
     handleBack() {
         this.dispatchEvent(new CustomEvent('backtotables'));
+    }
+
+    handlePaymentFieldChange(event) {
+        const key = event.target.name;
+        const value = event.target.value;
+        this.paymentForm = { ...this.paymentForm, [key]: value };
+    }
+
+    async handleSavePayment() {
+        if (!this.receipt?.POS_Order__c) {
+            this.showToast('Error', 'Order not found for this receipt.', 'error');
+            return;
+        }
+        if (!this.paymentForm.method) {
+            this.showToast('Error', 'Please select payment method.', 'error');
+            return;
+        }
+        if (!this.paymentForm.status) {
+            this.showToast('Error', 'Please select payment status.', 'error');
+            return;
+        }
+        this.isSavingPayment = true;
+        try {
+            await updateOrderPaymentDetails({
+                orderId: this.receipt.POS_Order__c,
+                paymentMethod: this.paymentForm.method,
+                paymentStatus: this.paymentForm.status
+            });
+            await this.loadReceipt();
+            this.showToast('Success', 'Payment details updated.', 'success');
+        } catch (err) {
+            console.error('Payment update error:', err);
+            this.showToast('Error', err?.body?.message || 'Failed to update payment details.', 'error');
+        } finally {
+            this.isSavingPayment = false;
+        }
     }
 
     showToast(title, message, variant) {
@@ -198,5 +241,23 @@ export default class PosReceipt extends LightningElement {
             ...item,
             formattedLineTotal: '₹' + (item.Line_Total__c || 0)
         }));
+    }
+
+    get paymentMethodOptions() {
+        return [
+            { label: 'Select payment method', value: '' },
+            { label: 'Cash', value: 'Cash' },
+            { label: 'UPI', value: 'UPI' },
+            { label: 'Card', value: 'Card' },
+            { label: 'Mixed', value: 'Mixed' }
+        ];
+    }
+
+    get paymentStatusOptions() {
+        return [
+            { label: 'Pending', value: 'Pending' },
+            { label: 'Partial', value: 'Partial' },
+            { label: 'Paid', value: 'Paid' }
+        ];
     }
 }
