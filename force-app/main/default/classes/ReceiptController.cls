@@ -23,10 +23,6 @@ public without sharing class ReceiptController {
         );
         insert receipt;
 
-        if (!Test.isRunningTest()) {
-            System.enqueueJob(new WhatsAppReceiptQueueable(receipt.Id));
-        }
-
         return [
             SELECT Id, Name, Receipt_Number__c, Generated_DateTime__c,
                    Subtotal__c, Tax_Amount__c, Discount_Amount__c,
@@ -104,7 +100,7 @@ public without sharing class ReceiptController {
     }
 
     /**
-     * Shared PDF blob for download (LWC) and WhatsApp (Queueable).
+     * Shared PDF blob for receipt download surfaces.
      */
     public static Blob getReceiptPdfBlob(Id receiptId) {
         return getReceiptPdfBlob(receiptId, 'a4');

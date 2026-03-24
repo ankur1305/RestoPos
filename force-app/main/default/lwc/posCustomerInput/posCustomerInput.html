@@ -19,17 +19,6 @@
                 </div>
             </div>
 
-            <div class="whatsapp-optin-row">
-                <label class="optin-label">
-                    <input
-                        type="checkbox"
-                        checked={whatsappReceiptOptIn}
-                        onchange={handleWhatsAppOptInChange}
-                    />
-                    <span>Send receipt on WhatsApp</span>
-                </label>
-            </div>
-
             <template lwc:if={isSearching}>
                 <div class="search-status">
                     <span class="search-dot"></span>

@@ -176,11 +176,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>POS_Order__c.WhatsApp_Receipt_Opt_In__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Receipt__c.Discount_Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -212,11 +207,6 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Receipt__c.Total_Amount__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>Receipt__c.WhatsApp_Last_Status__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -272,16 +262,6 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Restaurant__c.Tax_Rate__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>WhatsApp_API_Config__c.Access_Token__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>WhatsApp_API_Config__c.Is_Enabled__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
@@ -358,15 +338,6 @@
         <object>Restaurant__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
-    <objectPermissions>
-        <allowCreate>true</allowCreate>
-        <allowDelete>true</allowDelete>
-        <allowEdit>true</allowEdit>
-        <allowRead>true</allowRead>
-        <modifyAllRecords>true</modifyAllRecords>
-        <object>WhatsApp_API_Config__c</object>
-        <viewAllRecords>true</viewAllRecords>
-    </objectPermissions>
     <tabSettings>
         <tab>Customer__c</tab>
         <visibility>Visible</visibility>
@@ -397,10 +368,6 @@
     </tabSettings>
     <tabSettings>
         <tab>Restaurant__c</tab>
-        <visibility>Visible</visibility>
-    </tabSettings>
-    <tabSettings>
-        <tab>WhatsApp_API_Config__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
 </PermissionSet>

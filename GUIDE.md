@@ -2396,7 +2396,7 @@ Create a Lightning App called "RestoPos Admin" with:
 - **Offline Mode:** Service Worker + IndexedDB for intermittent connectivity
 - **Thermal Printer Integration:** Direct ESC/POS printer support via local bridge app
 - **GST/Tax Compliance:** Indian GST format receipts with GSTIN, HSN codes
-- **Table Reservation System:** Time-slot based reservation with SMS/WhatsApp confirmation
+- **Table Reservation System:** Time-slot based reservation with SMS confirmation
 
 ### Phase 3 (Scale)
 

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Meta WhatsApp Cloud API routing (phone number id, template). One row: Default.</description>
-    <label>WhatsApp Config</label>
-    <pluralLabel>WhatsApp Configs</pluralLabel>
-    <visibility>Public</visibility>
-</CustomObject>

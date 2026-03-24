@@ -103,16 +103,6 @@
                 <identifier>po_Item_Count_c</identifier>
             </fieldInstance>
         </itemInstances>
-        <itemInstances>
-            <fieldInstance>
-                <fieldInstanceProperties>
-                    <name>uiBehavior</name>
-                    <value>none</value>
-                </fieldInstanceProperties>
-                <fieldItem>Record.WhatsApp_Receipt_Opt_In__c</fieldItem>
-                <identifier>po_WhatsApp_OptIn_c</identifier>
-            </fieldInstance>
-        </itemInstances>
         <name>FacetPOCol1</name>
         <type>Facet</type>
     </flexiPageRegions>

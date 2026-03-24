@@ -140,7 +140,6 @@ public without sharing class OrderController {
                    Customer_Name__c, Notes__c, Item_Count__c,
                    Customer__c, Customer__r.Name, Customer__r.Phone__c,
                    Customer__r.Visit_Count__c,
-                   WhatsApp_Receipt_Opt_In__c,
                    Restaurant__c, Restaurant__r.Name,
                    Restaurant__r.Tax_Rate__c, Restaurant__r.Currency_Code__c,
                    Table__c, Table__r.Name,
@@ -192,14 +191,6 @@ public without sharing class OrderController {
     public static void linkCustomerToOrder(String orderId, String customerId) {
         POS_Order__c ord = new POS_Order__c(Id = orderId, Customer__c = customerId);
         update ord;
-    }
-
-    @AuraEnabled
-    public static void updateOrderWhatsAppOptIn(String orderId, Boolean optIn) {
-        if (String.isBlank(orderId)) {
-            return;
-        }
-        update new POS_Order__c(Id = orderId, WhatsApp_Receipt_Opt_In__c = (optIn == true));
     }
 
     @AuraEnabled

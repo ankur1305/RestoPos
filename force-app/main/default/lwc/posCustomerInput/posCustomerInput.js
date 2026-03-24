@@ -5,15 +5,6 @@ import { normalizeIndianPhone } from 'c/posUtils';
 
 export default class PosCustomerInput extends LightningElement {
     @api restaurantId;
-    _localWhatsAppOpt = false;
-
-    @api
-    get whatsappReceiptOptIn() {
-        return this._localWhatsAppOpt;
-    }
-    set whatsappReceiptOptIn(value) {
-        this._localWhatsAppOpt = !!value;
-    }
 
     @track phone = '';
     @track customerName = '';
@@ -96,17 +87,6 @@ export default class PosCustomerInput extends LightningElement {
         } finally {
             this.isSearching = false;
         }
-    }
-
-    handleWhatsAppOptInChange(event) {
-        this._localWhatsAppOpt = event.target.checked;
-        this.dispatchEvent(
-            new CustomEvent('whatsappoptinchange', {
-                detail: { optIn: this._localWhatsAppOpt },
-                bubbles: true,
-                composed: true
-            })
-        );
     }
 
     fireCustomerChange(customerId) {

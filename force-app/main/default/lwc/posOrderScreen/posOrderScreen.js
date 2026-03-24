@@ -9,7 +9,6 @@ import closeOrder from '@salesforce/apex/OrderController.closeOrder';
 import getOrderCartSnapshot from '@salesforce/apex/OrderController.getOrderCartSnapshot';
 import updateOrderStatus from '@salesforce/apex/OrderController.updateOrderStatus';
 import linkCustomerToOrder from '@salesforce/apex/OrderController.linkCustomerToOrder';
-import updateOrderWhatsAppOptIn from '@salesforce/apex/OrderController.updateOrderWhatsAppOptIn';
 import { normalizeIndianPhone } from 'c/posUtils';
 
 export default class PosOrderScreen extends LightningElement {
@@ -21,7 +20,6 @@ export default class PosOrderScreen extends LightningElement {
     @track orderItems = [];
     @track showCancelConfirm = false;
     @track mobileTab = 'menu';
-    @track whatsappOptInLocal = false;
     @track inlineToastMessage = '';
     @track inlineToastType = 'add';
     isLoading = false;
@@ -119,7 +117,6 @@ export default class PosOrderScreen extends LightningElement {
             this.isLoading = true;
             this.order = await getOrder({ orderId });
             this.orderItems = this.order.Order_Items__r || [];
-            this.whatsappOptInLocal = this.order.WhatsApp_Receipt_Opt_In__c === true;
         } catch (err) {
             console.error('Load order error:', err);
         } finally {
@@ -244,30 +241,6 @@ export default class PosOrderScreen extends LightningElement {
 
     handleMobileTabCart() {
         this.mobileTab = 'cart';
-    }
-
-    async handleWhatsAppOptInFromChild(event) {
-        const optIn = event.detail?.optIn === true;
-        await this.persistWhatsAppOptIn(optIn);
-    }
-
-    async handleLinkedCustomerWhatsAppChange(event) {
-        await this.persistWhatsAppOptIn(event.target.checked);
-    }
-
-    async persistWhatsAppOptIn(optIn) {
-        if (!this._orderId) {
-            return;
-        }
-        const prev = this.whatsappOptInLocal;
-        this.whatsappOptInLocal = optIn;
-        try {
-            await updateOrderWhatsAppOptIn({ orderId: this._orderId, optIn });
-        } catch (err) {
-            this.whatsappOptInLocal = prev;
-            console.error('WhatsApp opt-in save error:', err);
-            this.showToast('Error', 'Could not save WhatsApp preference.', 'error');
-        }
     }
 
     showToast(title, message, variant) {

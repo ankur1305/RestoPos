@@ -49,22 +49,12 @@
                                     <span class="customer-phone-value">{customerPhoneDisplay}</span>
                                 </div>
                             </template>
-                            <label class="optin-label">
-                                <input
-                                    type="checkbox"
-                                    checked={whatsappOptInLocal}
-                                    onchange={handleLinkedCustomerWhatsAppChange}
-                                />
-                                <span>Send receipt on WhatsApp</span>
-                            </label>
                         </div>
                     </template>
                     <template lwc:else>
                         <c-pos-customer-input
                             restaurant-id={restaurantId}
-                            whatsapp-receipt-opt-in={whatsappOptInLocal}
                             oncustomerchange={handleCustomerChange}
-                            onwhatsappoptinchange={handleWhatsAppOptInFromChild}
                         ></c-pos-customer-input>
                     </template>
                 </div>
