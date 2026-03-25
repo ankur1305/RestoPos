@@ -125,18 +125,27 @@ public without sharing class TableController {
     }
 
     private static void ensureReadable(Schema.DescribeSObjectResult describeResult, String label) {
+        if (isGuestContext()) {
+            return;
+        }
         if (!describeResult.isAccessible()) {
             throw new AuraHandledException(label + ' are not readable for this user.');
         }
     }
 
     private static void ensureUpdatable(Schema.DescribeSObjectResult describeResult, String label) {
+        if (isGuestContext()) {
+            return;
+        }
         if (!describeResult.isUpdateable()) {
             throw new AuraHandledException(label + ' are not updateable for this user.');
         }
     }
 
     private static void ensureCreateOrUpdate(String idValue, Schema.DescribeSObjectResult describeResult, String label) {
+        if (isGuestContext()) {
+            return;
+        }
         if (String.isBlank(idValue)) {
             if (!describeResult.isCreateable()) {
                 throw new AuraHandledException('No create permission for ' + label + '.');
@@ -154,5 +163,9 @@ public without sharing class TableController {
         return normalizedStatus != 'Closed'
             && normalizedStatus != 'Cancelled'
             && normalizedStatus != 'Served';
+    }
+
+    private static Boolean isGuestContext() {
+        return UserInfo.getUserType() == 'Guest';
     }
 }

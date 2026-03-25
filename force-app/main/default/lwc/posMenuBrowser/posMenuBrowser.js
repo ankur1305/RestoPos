@@ -1,4 +1,4 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import getMenuCategories from '@salesforce/apex/MenuController.getMenuCategories';
 import getMenuItems from '@salesforce/apex/MenuController.getMenuItems';
 import searchMenuItems from '@salesforce/apex/MenuController.searchMenuItems';
@@ -17,11 +17,35 @@ export default class PosMenuBrowser extends LightningElement {
     isLoading = false;
     searchDebounceId;
 
-    @wire(getMenuCategories, { restaurantId: '$restaurantId' })
-    wiredCategories({ data }) {
-        if (data) {
-            this.categories = data;
-            this.loadItems();
+    connectedCallback() {
+        this.loadMenuData();
+    }
+
+    @api
+    async refreshMenu() {
+        await this.loadMenuData();
+    }
+
+    async loadMenuData() {
+        if (!this.restaurantId) {
+            return;
+        }
+        this.isLoading = true;
+        try {
+            this.categories = await getMenuCategories({ restaurantId: this.restaurantId });
+            if (
+                this.selectedCategoryId !== ALL_CATEGORY_ID
+                && this.selectedCategoryId
+                && !this.categories.some((category) => category.Id === this.selectedCategoryId)
+            ) {
+                this.selectedCategoryId = ALL_CATEGORY_ID;
+            }
+            await this.loadItems();
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('Load menu data error:', err);
+        } finally {
+            this.isLoading = false;
         }
     }
 

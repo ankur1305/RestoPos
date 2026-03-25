@@ -1,6 +1,6 @@
 public without sharing class MenuController {
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Menu_Category__c> getMenuCategories(String restaurantId) {
         return [
             SELECT Id, Name, Sort_Order__c, Icon__c
@@ -11,7 +11,7 @@ public without sharing class MenuController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Menu_Item__c> getMenuItems(String restaurantId, String categoryId) {
         String query = 'SELECT Id, Name, Price__c, Description__c, Is_Available__c, '
                      + 'Is_Vegetarian__c, Image_URL__c, Sort_Order__c, Menu_Category__c '
@@ -24,7 +24,7 @@ public without sharing class MenuController {
         return Database.query(query);
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Menu_Item__c> searchMenuItems(String restaurantId, String searchTerm) {
         String searchKey = '%' + String.escapeSingleQuotes(searchTerm) + '%';
         return [
@@ -123,7 +123,7 @@ public without sharing class MenuController {
 
     @AuraEnabled
     public static void deleteMenuItem(String menuItemId) {
-        if (!Menu_Item__c.SObjectType.getDescribe().isDeletable()) {
+        if (!isGuestContext() && !Menu_Item__c.SObjectType.getDescribe().isDeletable()) {
             throw new AuraHandledException('No delete permission for menu items.');
         }
         delete [SELECT Id FROM Menu_Item__c WHERE Id = :menuItemId LIMIT 1];
@@ -131,7 +131,7 @@ public without sharing class MenuController {
 
     @AuraEnabled
     public static void deleteMenuCategory(String restaurantId, String categoryId) {
-        if (!Menu_Category__c.SObjectType.getDescribe().isDeletable()) {
+        if (!isGuestContext() && !Menu_Category__c.SObjectType.getDescribe().isDeletable()) {
             throw new AuraHandledException('No delete permission for menu categories.');
         }
         Menu_Category__c category = [
@@ -199,18 +199,27 @@ public without sharing class MenuController {
     }
 
     private static void ensureReadable(Schema.DescribeSObjectResult describeResult, String label) {
+        if (isGuestContext()) {
+            return;
+        }
         if (!describeResult.isAccessible()) {
             throw new AuraHandledException(label + ' are not readable for this user.');
         }
     }
 
     private static void ensureUpdatable(Schema.DescribeSObjectResult describeResult, String label) {
+        if (isGuestContext()) {
+            return;
+        }
         if (!describeResult.isUpdateable()) {
             throw new AuraHandledException(label + ' are not updateable for this user.');
         }
     }
 
     private static void ensureCreateOrUpdate(String idValue, Schema.DescribeSObjectResult describeResult, String label) {
+        if (isGuestContext()) {
+            return;
+        }
         if (String.isBlank(idValue)) {
             if (!describeResult.isCreateable()) {
                 throw new AuraHandledException('No create permission for ' + label + '.');
@@ -218,5 +227,9 @@ public without sharing class MenuController {
         } else if (!describeResult.isUpdateable()) {
             throw new AuraHandledException('No update permission for ' + label + '.');
         }
+    }
+
+    private static Boolean isGuestContext() {
+        return UserInfo.getUserType() == 'Guest';
     }
 }

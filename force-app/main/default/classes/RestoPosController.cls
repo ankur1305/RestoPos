@@ -24,6 +24,9 @@ public without sharing class RestoPosController {
 
     @AuraEnabled
     public static Boolean verifyPin(String restaurantId, String pin) {
+        if (String.isBlank(pin) || !isStrictSixDigitPin(pin)) {
+            throw new AuraHandledException('Staff PIN must be exactly 6 digits.');
+        }
         List<Restaurant__c> restaurants = [
             SELECT PIN__c FROM Restaurant__c
             WHERE Id = :restaurantId
@@ -32,7 +35,43 @@ public without sharing class RestoPosController {
         if (restaurants.isEmpty()) {
             throw new AuraHandledException('Restaurant not found.');
         }
+        if (!isStrictSixDigitPin(restaurants[0].PIN__c)) {
+            throw new AuraHandledException('Configured Staff PIN is invalid. Please update it to exactly 6 digits.');
+        }
         return restaurants[0].PIN__c == pin;
+    }
+
+    @AuraEnabled
+    public static Boolean verifyManagerPin(String restaurantId, String managerPin) {
+        if (String.isBlank(restaurantId)) {
+            throw new AuraHandledException('Restaurant is required.');
+        }
+        if (String.isBlank(managerPin)) {
+            throw new AuraHandledException('Manager PIN is required.');
+        }
+        if (!isStrictSixDigitPin(managerPin)) {
+            throw new AuraHandledException('Manager PIN must be exactly 6 digits.');
+        }
+        List<Restaurant__c> restaurants = [
+            SELECT Manager_PIN__c
+            FROM Restaurant__c
+            WHERE Id = :restaurantId
+            LIMIT 1
+        ];
+        if (restaurants.isEmpty()) {
+            throw new AuraHandledException('Restaurant not found.');
+        }
+        if (!isStrictSixDigitPin(restaurants[0].Manager_PIN__c)) {
+            throw new AuraHandledException('Configured Manager PIN is invalid. Please update it to exactly 6 digits.');
+        }
+        return restaurants[0].Manager_PIN__c == managerPin;
+    }
+
+    private static Boolean isStrictSixDigitPin(String pinValue) {
+        if (String.isBlank(pinValue)) {
+            return false;
+        }
+        return Pattern.matches('^\\d{6}$', pinValue);
     }
 
     private static String getLatestRestaurantLogoUrl(Id restaurantId) {

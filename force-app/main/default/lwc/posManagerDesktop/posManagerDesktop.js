@@ -14,8 +14,8 @@ import setCategoryAvailability from '@salesforce/apex/MenuController.setCategory
 import getManagerReport from '@salesforce/apex/ManagerReportController.getManagerReport';
 import createExcelExport from '@salesforce/apex/ManagerReportController.createExcelExport';
 
-const EMPTY_TABLE = { Id: null, Name: '', Capacity__c: 4, Sort_Order__c: 1, Status__c: 'Available' };
-const EMPTY_CATEGORY = { Id: null, Name: '', Sort_Order__c: 1, Icon__c: '', Is_Active__c: true };
+const EMPTY_TABLE = { Id: null, Name: '', Capacity__c: 4, Status__c: 'Available' };
+const EMPTY_CATEGORY = { Id: null, Name: '', Icon__c: '', Is_Active__c: true };
 const PAGE_SIZE = 10;
 
 export default class PosManagerDesktop extends LightningElement {
@@ -23,7 +23,6 @@ export default class PosManagerDesktop extends LightningElement {
     @api currencyCode;
 
     @track activeTab = 'tables';
-    @track isDesktop = true;
     @track isLoading = false;
     @track tables = [];
     @track menuCategories = [];
@@ -34,7 +33,7 @@ export default class PosManagerDesktop extends LightningElement {
     @track categoryForm = { ...EMPTY_CATEGORY };
     @track itemForm = {
         Id: null, Name: '', Menu_Category__c: '', Price__c: 0, Description__c: '',
-        Is_Available__c: true, Is_Vegetarian__c: false, Sort_Order__c: 1, Image_URL__c: ''
+        Is_Available__c: true, Is_Vegetarian__c: false, Image_URL__c: ''
     };
     @track reportFilters = {
         preset: 'today',
@@ -70,18 +69,11 @@ export default class PosManagerDesktop extends LightningElement {
     @track editModalTitle = '';
 
     connectedCallback() {
-        this.isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-        this.resizeHandler = () => {
-            this.isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-        };
-        window.addEventListener('resize', this.resizeHandler);
         this.initialize();
     }
 
     disconnectedCallback() {
-        if (this.resizeHandler) {
-            window.removeEventListener('resize', this.resizeHandler);
-        }
+        // no-op
     }
 
     async initialize() {
@@ -244,7 +236,7 @@ export default class PosManagerDesktop extends LightningElement {
                 tableId: this.tableForm.Id,
                 name,
                 capacity: Number(this.tableForm.Capacity__c || 1),
-                sortOrder: Number(this.tableForm.Sort_Order__c || 1),
+                sortOrder: null,
                 status: this.tableForm.Status__c
             });
             this.closeTableModal();
@@ -352,7 +344,7 @@ export default class PosManagerDesktop extends LightningElement {
                 restaurantId: this.restaurantId,
                 categoryId: this.categoryForm.Id,
                 name,
-                sortOrder: Number(this.categoryForm.Sort_Order__c || 1),
+                sortOrder: null,
                 icon: this.categoryForm.Icon__c,
                 isActive: this.categoryForm.Is_Active__c
             });
@@ -395,7 +387,7 @@ export default class PosManagerDesktop extends LightningElement {
     openNewItem() {
         this.itemForm = {
             Id: null, Name: '', Menu_Category__c: this.menuCategories[0]?.Id || '', Price__c: 0, Description__c: '',
-            Is_Available__c: true, Is_Vegetarian__c: false, Sort_Order__c: 1, Image_URL__c: ''
+            Is_Available__c: true, Is_Vegetarian__c: false, Image_URL__c: ''
         };
         this.itemFormError = '';
         this.editModalTitle = 'Add Menu Item';
@@ -445,7 +437,7 @@ export default class PosManagerDesktop extends LightningElement {
                 description: this.itemForm.Description__c,
                 isAvailable: this.itemForm.Is_Available__c,
                 isVegetarian: this.itemForm.Is_Vegetarian__c,
-                sortOrder: Number(this.itemForm.Sort_Order__c || 1),
+                sortOrder: null,
                 imageUrl: this.itemForm.Image_URL__c
             });
             this.closeItemModal();
@@ -488,7 +480,7 @@ export default class PosManagerDesktop extends LightningElement {
                 description: item.Description__c || '',
                 isAvailable: item.Is_Available__c,
                 isVegetarian: item.Is_Vegetarian__c,
-                sortOrder: Number(item.Sort_Order__c || 1),
+                sortOrder: null,
                 imageUrl: item.Image_URL__c || ''
             });
             await this.loadMenu();
@@ -510,7 +502,7 @@ export default class PosManagerDesktop extends LightningElement {
                 description: item.Description__c || '',
                 isAvailable: newAvailability,
                 isVegetarian: item.Is_Vegetarian__c,
-                sortOrder: Number(item.Sort_Order__c || 1),
+                sortOrder: null,
                 imageUrl: item.Image_URL__c || ''
             });
             await this.loadMenu();
@@ -1207,5 +1199,13 @@ export default class PosManagerDesktop extends LightningElement {
 
     stopPropagation(event) {
         event.stopPropagation();
+    }
+
+    clearInlineMessage(event) {
+        const target = event.currentTarget?.dataset?.target;
+        if (!target) {
+            return;
+        }
+        this[target] = '';
     }
 }

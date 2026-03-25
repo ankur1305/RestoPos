@@ -33,7 +33,10 @@
                 </div>
 
                 <template lwc:if={inlineToastMessage}>
-                    <div class={inlineToastClass}>{inlineToastMessage}</div>
+                    <div class={inlineToastClass}>
+                        <span>{inlineToastMessage}</span>
+                        <button type="button" class="inline-toast-close" onclick={dismissInlineToast} aria-label="Dismiss message">&times;</button>
+                    </div>
                 </template>
 
                 <div class="customer-section">

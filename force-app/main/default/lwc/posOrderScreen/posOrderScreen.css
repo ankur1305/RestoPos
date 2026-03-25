@@ -246,12 +246,25 @@ c-pos-menu-browser {
     background: var(--color-success-light);
     border-bottom: 1px solid var(--color-success-border);
     animation: toastSlide 2.2s ease-in-out both;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 .inline-toast-remove {
     color: var(--color-warning);
     background: var(--color-warning-light);
     border-bottom-color: var(--color-warning-border);
+}
+
+.inline-toast-close {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
 }
 
 .customer-section {

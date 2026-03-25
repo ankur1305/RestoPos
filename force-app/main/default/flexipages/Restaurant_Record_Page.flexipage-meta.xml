@@ -69,6 +69,16 @@
                     <name>uiBehavior</name>
                     <value>none</value>
                 </fieldInstanceProperties>
+                <fieldItem>Record.Manager_PIN__c</fieldItem>
+                <identifier>RecordManager_PIN_cField</identifier>
+            </fieldInstance>
+        </itemInstances>
+        <itemInstances>
+            <fieldInstance>
+                <fieldInstanceProperties>
+                    <name>uiBehavior</name>
+                    <value>none</value>
+                </fieldInstanceProperties>
                 <fieldItem>Record.Currency_Code__c</fieldItem>
                 <identifier>RecordCurrency_Code_cField</identifier>
             </fieldInstance>

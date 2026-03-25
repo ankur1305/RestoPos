@@ -7,6 +7,7 @@
                 current-view={currentView}
                 onnavigate={handleNavigation}
                 onbacktotables={handleBackToTables}
+                onrequestmanagerpin={handleRequestManagerPin}
             ></c-pos-header>
         </template>
 
@@ -62,5 +63,32 @@
                 ></c-pos-manager-desktop>
             </template>
         </div>
+
+        <template lwc:if={showManagerPinModal}>
+            <div class="manager-pin-overlay" onclick={closeManagerPinModal}>
+                <div class="manager-pin-modal" onclick={stopPropagation}>
+                    <h3 class="manager-pin-title">Manager Access</h3>
+                    <p class="manager-pin-subtitle">Enter Manager PIN to continue.</p>
+                    <lightning-input
+                        type="password"
+                        label="Manager PIN"
+                        value={managerPin}
+                        onchange={handleManagerPinInput}
+                        onkeyup={handleManagerPinKeyup}
+                        maxlength="6"
+                        placeholder="Enter 6-digit Manager PIN"
+                        inputmode="numeric"
+                        message-when-too-long="Manager PIN must be exactly 6 digits."
+                    ></lightning-input>
+                    <template lwc:if={managerPinError}>
+                        <div class="manager-pin-error">{managerPinError}</div>
+                    </template>
+                    <div class="manager-pin-actions">
+                        <button type="button" class="manager-pin-btn manager-pin-cancel" onclick={closeManagerPinModal}>Cancel</button>
+                        <button type="button" class="manager-pin-btn manager-pin-submit" onclick={submitManagerPin}>Verify</button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 </template>

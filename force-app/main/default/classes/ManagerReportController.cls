@@ -8,7 +8,7 @@ public without sharing class ManagerReportController {
         if (String.isBlank(fileContent)) {
             throw new AuraHandledException('No export data available.');
         }
-        if (!ContentVersion.SObjectType.getDescribe().isCreateable()) {
+        if (!isGuestContext() && !ContentVersion.SObjectType.getDescribe().isCreateable()) {
             throw new AuraHandledException('No permission to create export file.');
         }
 
@@ -33,8 +33,9 @@ public without sharing class ManagerReportController {
         String paymentMethod,
         Boolean includeCancelled
     ) {
-        if (!POS_Order__c.SObjectType.getDescribe().isAccessible()
-            || !Order_Item__c.SObjectType.getDescribe().isAccessible()) {
+        if (!isGuestContext()
+            && (!POS_Order__c.SObjectType.getDescribe().isAccessible()
+            || !Order_Item__c.SObjectType.getDescribe().isAccessible())) {
             throw new AuraHandledException('No permission to access reporting data.');
         }
         if (String.isBlank(restaurantId)) {
@@ -509,5 +510,9 @@ public without sharing class ManagerReportController {
     private class DateRange {
         public Date fromDate;
         public Date toDate;
+    }
+
+    private static Boolean isGuestContext() {
+        return UserInfo.getUserType() == 'Guest';
     }
 }

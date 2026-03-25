@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import getRestaurantByCode from '@salesforce/apex/RestoPosController.getRestaurantByCode';
 import verifyPin from '@salesforce/apex/RestoPosController.verifyPin';
+import verifyManagerPin from '@salesforce/apex/RestoPosController.verifyManagerPin';
 
 export default class RestoPosApp extends LightningElement {
     @track currentView = 'login';
@@ -9,6 +10,9 @@ export default class RestoPosApp extends LightningElement {
     @track selectedOrderId;
     @track receiptId;
     @track error;
+    @track showManagerPinModal = false;
+    @track managerPin = '';
+    @track managerPinError = '';
     isLoading = false;
 
     get isLoginView() { return this.currentView === 'login'; }
@@ -54,6 +58,10 @@ export default class RestoPosApp extends LightningElement {
         try {
             this.isLoading = true;
             this.error = null;
+            if (!/^\d{6}$/.test(String(pin || ''))) {
+                this.error = 'Staff PIN must be exactly 6 digits.';
+                return;
+            }
             if (!this.restaurant) {
                 await this.loadRestaurant(restaurantCode);
             }
@@ -95,7 +103,71 @@ export default class RestoPosApp extends LightningElement {
         this.currentView = event.detail.view;
     }
 
+    handleRequestManagerPin() {
+        this.managerPin = '';
+        this.managerPinError = '';
+        this.showManagerPinModal = true;
+    }
+
+    handleManagerPinInput(event) {
+        const raw = event.target.value || '';
+        this.managerPin = raw.replace(/\D/g, '').slice(0, 6);
+        this.managerPinError = '';
+    }
+
+    async submitManagerPin() {
+        if (!this.restaurant?.Id) {
+            this.managerPinError = 'Restaurant context missing.';
+            return;
+        }
+        if (!this.managerPin) {
+            this.managerPinError = 'Manager PIN is required.';
+            return;
+        }
+        if (!/^\d{6}$/.test(String(this.managerPin || ''))) {
+            this.managerPinError = 'Manager PIN must be exactly 6 digits.';
+            return;
+        }
+        try {
+            this.isLoading = true;
+            const valid = await verifyManagerPin({
+                restaurantId: this.restaurant.Id,
+                managerPin: this.managerPin
+            });
+            if (!valid) {
+                this.managerPinError = 'Invalid Manager PIN.';
+                return;
+            }
+            this.showManagerPinModal = false;
+            this.managerPin = '';
+            this.managerPinError = '';
+            this.currentView = 'manager';
+        } catch (err) {
+            this.managerPinError = err?.body?.message || 'Manager PIN verification failed.';
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    closeManagerPinModal() {
+        this.showManagerPinModal = false;
+        this.managerPin = '';
+        this.managerPinError = '';
+    }
+
+    handleManagerPinKeyup(event) {
+        if (event.key === 'Enter') {
+            this.submitManagerPin();
+        } else if (event.key === 'Escape') {
+            this.closeManagerPinModal();
+        }
+    }
+
     handleDismissError() {
         this.error = null;
+    }
+
+    stopPropagation(event) {
+        event.stopPropagation();
     }
 }

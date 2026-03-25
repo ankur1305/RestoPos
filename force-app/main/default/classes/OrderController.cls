@@ -52,11 +52,14 @@ public without sharing class OrderController {
             itemId = existing[0].Id;
         } else {
             Menu_Item__c menuItem = [
-                SELECT Id, Name, Price__c
+                SELECT Id, Name, Price__c, Is_Available__c
                 FROM Menu_Item__c
                 WHERE Id = :menuItemId
                 LIMIT 1
             ];
+            if (menuItem.Is_Available__c == false) {
+                throw new AuraHandledException('This item is sold out and cannot be added.');
+            }
             Order_Item__c item = new Order_Item__c(
                 POS_Order__c = orderId,
                 Menu_Item__c = menuItemId,

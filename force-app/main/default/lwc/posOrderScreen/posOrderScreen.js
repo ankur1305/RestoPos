@@ -76,6 +76,14 @@ export default class PosOrderScreen extends LightningElement {
         }, 10);
     }
 
+    dismissInlineToast() {
+        if (this._toastTimerId) {
+            clearTimeout(this._toastTimerId);
+            this._toastTimerId = null;
+        }
+        this.inlineToastMessage = '';
+    }
+
     get inlineToastClass() {
         return 'inline-toast' + (this.inlineToastType === 'remove' ? ' inline-toast-remove' : '');
     }
@@ -157,7 +165,8 @@ export default class PosOrderScreen extends LightningElement {
             await this.refreshCartOnly();
             this.showInlineToast('Item added to cart', 'add');
         } catch (err) {
-            console.error('Add item error:', err);
+            this.showToast('Error', err?.body?.message || 'Unable to add item.', 'error');
+            await this.refreshMenuBrowser();
         }
     }
 
@@ -168,6 +177,13 @@ export default class PosOrderScreen extends LightningElement {
             this.showInlineToast('Item removed', 'remove');
         } catch (err) {
             console.error('Remove item error:', err);
+        }
+    }
+
+    async refreshMenuBrowser() {
+        const menuBrowser = this.template.querySelector('c-pos-menu-browser');
+        if (menuBrowser && typeof menuBrowser.refreshMenu === 'function') {
+            await menuBrowser.refreshMenu();
         }
     }
 

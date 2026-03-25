@@ -145,3 +145,71 @@
         padding: var(--space-2) var(--space-3);
     }
 }
+
+.manager-pin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+}
+
+.manager-pin-modal {
+    width: min(420px, 100%);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 1rem;
+}
+
+.manager-pin-title {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+.manager-pin-subtitle {
+    margin: 0.35rem 0 0.8rem 0;
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+}
+
+.manager-pin-error {
+    margin-top: 0.5rem;
+    color: var(--color-danger);
+    background: var(--color-danger-light);
+    border: 1px solid var(--color-danger-border);
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.78rem;
+}
+
+.manager-pin-actions {
+    margin-top: 0.9rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.manager-pin-btn {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+}
+
+.manager-pin-cancel {
+    background: var(--color-surface-alt);
+    border-color: var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+.manager-pin-submit {
+    background: var(--color-primary);
+    color: #fff;
+}

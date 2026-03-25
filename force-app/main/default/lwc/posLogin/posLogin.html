@@ -36,10 +36,12 @@
                         class="form-input"
                         type="password"
                         value={pin}
-                        placeholder="Enter PIN"
+                        placeholder="Enter 6-digit PIN"
                         oninput={handlePinChange}
                         onkeyup={handleKeyUp}
                         maxlength="6"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
                     />
                 </div>
                 <button class="login-btn" onclick={handleSubmit}>

@@ -31,10 +31,32 @@ private class RestoPosControllerTest {
     static void testVerifyPin() {
         Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
         Test.startTest();
-        Boolean valid = RestoPosController.verifyPin(r.Id, '1234');
-        Boolean invalid = RestoPosController.verifyPin(r.Id, '0000');
+        Boolean valid = RestoPosController.verifyPin(r.Id, '123456');
+        Boolean invalid = RestoPosController.verifyPin(r.Id, '000000');
         Test.stopTest();
         System.assertEquals(true, valid);
         System.assertEquals(false, invalid);
+    }
+
+    @IsTest
+    static void testVerifyManagerPin() {
+        Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
+        Test.startTest();
+        Boolean valid = RestoPosController.verifyManagerPin(r.Id, '999999');
+        Boolean invalid = RestoPosController.verifyManagerPin(r.Id, '123456');
+        Test.stopTest();
+        System.assertEquals(true, valid);
+        System.assertEquals(false, invalid);
+    }
+
+    @IsTest
+    static void testVerifyPinRejectsNonSixDigits() {
+        Restaurant__c r = [SELECT Id FROM Restaurant__c LIMIT 1];
+        try {
+            RestoPosController.verifyPin(r.Id, '1234');
+            System.assert(false, 'Expected six-digit validation error');
+        } catch (AuraHandledException e) {
+            System.assert(e.getMessage().contains('exactly 6 digits'));
+        }
     }
 }

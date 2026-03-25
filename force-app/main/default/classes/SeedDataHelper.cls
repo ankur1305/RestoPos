@@ -16,7 +16,8 @@ public class SeedDataHelper {
             Phone__c = '+91-9876543210',
             Tax_Rate__c = 5.0,
             Currency_Code__c = 'INR',
-            PIN__c = '1234',
+            PIN__c = '123456',
+            Manager_PIN__c = '999999',
             Is_Active__c = true
         );
         insert rest;
@@ -64,7 +65,7 @@ public class SeedDataHelper {
         };
         insert items;
 
-        System.debug('Seed data created: ' + rest.Name + ' (Code: ' + rest.Code__c + ', PIN: 1234)');
+        System.debug('Seed data created: ' + rest.Name + ' (Code: ' + rest.Code__c + ', PIN: 123456)');
         System.debug('Tables: ' + tables.size() + ', Categories: ' + categories.size() + ', Menu Items: ' + items.size());
     }
 
@@ -77,7 +78,8 @@ public class SeedDataHelper {
             Phone__c = '+91-9988776655',
             Tax_Rate__c = 5.0,
             Currency_Code__c = 'INR',
-            PIN__c = '5678',
+            PIN__c = '567890',
+            Manager_PIN__c = '888888',
             Is_Active__c = true
         );
         insert r2;
@@ -128,7 +130,7 @@ public class SeedDataHelper {
             new Menu_Item__c(Name='Kulfi', Menu_Category__c=cm2.get('Desserts'), Restaurant__c=r2.Id, Price__c=100, Is_Available__c=true, Is_Vegetarian__c=true, Sort_Order__c=2)
         };
         insert items2;
-        System.debug('Created: ' + r2.Name + ' (Code: SPG001, PIN: 5678) - ' + tables2.size() + ' tables, ' + items2.size() + ' items');
+        System.debug('Created: ' + r2.Name + ' (Code: SPG001, PIN: 567890) - ' + tables2.size() + ' tables, ' + items2.size() + ' items');
 
         // Restaurant 3: The Coastal Kitchen
         Restaurant__c r3 = new Restaurant__c(
@@ -138,7 +140,8 @@ public class SeedDataHelper {
             Phone__c = '+91-9112233445',
             Tax_Rate__c = 5.0,
             Currency_Code__c = 'INR',
-            PIN__c = '9012',
+            PIN__c = '901234',
+            Manager_PIN__c = '777777',
             Is_Active__c = true
         );
         insert r3;
@@ -189,6 +192,6 @@ public class SeedDataHelper {
             new Menu_Item__c(Name='Mysore Pak', Menu_Category__c=cm3.get('Desserts'), Restaurant__c=r3.Id, Price__c=90, Is_Available__c=true, Is_Vegetarian__c=true, Sort_Order__c=2)
         };
         insert items3;
-        System.debug('Created: ' + r3.Name + ' (Code: TCK001, PIN: 9012) - ' + tables3.size() + ' tables, ' + items3.size() + ' items');
+        System.debug('Created: ' + r3.Name + ' (Code: TCK001, PIN: 901234) - ' + tables3.size() + ' tables, ' + items3.size() + ' items');
     }
 }

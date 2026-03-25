@@ -1,6 +1,5 @@
 <template>
-    <template lwc:if={isDesktop}>
-        <section class="manager-wrap">
+    <section class="manager-wrap">
             <div class="manager-card">
                 <div class="manager-card-header">
                     <h2>Manager Console</h2>
@@ -43,10 +42,16 @@
                             </div>
                         </div>
                         <template lwc:if={transferError}>
-                            <div class="inline-error">{transferError}</div>
+                            <div class="inline-error">
+                                <span>{transferError}</span>
+                                <button type="button" class="inline-error-close" data-target="transferError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                            </div>
                         </template>
                         <template lwc:if={tableActionError}>
-                            <div class="inline-error">{tableActionError}</div>
+                            <div class="inline-error">
+                                <span>{tableActionError}</span>
+                                <button type="button" class="inline-error-close" data-target="tableActionError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                            </div>
                         </template>
 
                         <div class="list">
@@ -93,7 +98,10 @@
                                 </div>
                                 <div class="section-card-body list">
                                     <template lwc:if={categoryDeleteError}>
-                                        <div class="inline-error">{categoryDeleteError}</div>
+                                        <div class="inline-error">
+                                            <span>{categoryDeleteError}</span>
+                                            <button type="button" class="inline-error-close" data-target="categoryDeleteError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                                        </div>
                                     </template>
                                     <template for:each={menuCategories} for:item="cat">
                                         <div key={cat.Id} class="list-item compact">
@@ -484,18 +492,7 @@
                     </div>
                 </template>
             </div>
-        </section>
-    </template>
-    <template lwc:else>
-        <div class="manager-wrap">
-            <div class="manager-card">
-                <div class="manager-card-header">
-                    <h2>Manager Console</h2>
-                </div>
-                <div class="pad">Manager console is available only on desktop (minimum 1024px width).</div>
-            </div>
-        </div>
-    </template>
+    </section>
 
     <!-- ═══ EDIT TABLE MODAL ═══ -->
     <template lwc:if={showEditTableModal}>
@@ -507,11 +504,13 @@
                 </div>
                 <div class="modal-body form-col">
                     <template lwc:if={tableFormError}>
-                        <div class="inline-error">{tableFormError}</div>
+                        <div class="inline-error">
+                            <span>{tableFormError}</span>
+                            <button type="button" class="inline-error-close" data-target="tableFormError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                        </div>
                     </template>
                     <lightning-input label="Name" name="Name" value={tableForm.Name} onchange={handleTableInput}></lightning-input>
                     <lightning-input type="number" label="Capacity" name="Capacity__c" value={tableForm.Capacity__c} onchange={handleTableInput}></lightning-input>
-                    <lightning-input type="number" label="Sort Order" name="Sort_Order__c" value={tableForm.Sort_Order__c} onchange={handleTableInput}></lightning-input>
                     <lightning-combobox label="Status" name="Status__c" value={tableForm.Status__c} options={tableStatusOptions} onchange={handleTableInput}></lightning-combobox>
                 </div>
                 <div class="modal-footer">
@@ -532,10 +531,12 @@
                 </div>
                 <div class="modal-body form-col">
                     <template lwc:if={categoryFormError}>
-                        <div class="inline-error">{categoryFormError}</div>
+                        <div class="inline-error">
+                            <span>{categoryFormError}</span>
+                            <button type="button" class="inline-error-close" data-target="categoryFormError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                        </div>
                     </template>
                     <lightning-input label="Name" name="Name" value={categoryForm.Name} onchange={handleCategoryInput}></lightning-input>
-                    <lightning-input type="number" label="Sort Order" name="Sort_Order__c" value={categoryForm.Sort_Order__c} onchange={handleCategoryInput}></lightning-input>
                     <lightning-input label="Icon" name="Icon__c" value={categoryForm.Icon__c} onchange={handleCategoryInput}></lightning-input>
                 </div>
                 <div class="modal-footer">
@@ -556,7 +557,10 @@
                 </div>
                 <div class="modal-body form-col">
                     <template lwc:if={itemFormError}>
-                        <div class="inline-error">{itemFormError}</div>
+                        <div class="inline-error">
+                            <span>{itemFormError}</span>
+                            <button type="button" class="inline-error-close" data-target="itemFormError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                        </div>
                     </template>
                     <lightning-input label="Name" name="Name" value={itemForm.Name} onchange={handleItemInput}></lightning-input>
                     <lightning-combobox label="Category" name="Menu_Category__c" value={itemForm.Menu_Category__c} options={categoryOptions} onchange={handleItemInput}></lightning-combobox>
