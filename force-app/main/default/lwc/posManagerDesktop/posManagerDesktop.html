@@ -45,6 +45,9 @@
                         <template lwc:if={transferError}>
                             <div class="inline-error">{transferError}</div>
                         </template>
+                        <template lwc:if={tableActionError}>
+                            <div class="inline-error">{tableActionError}</div>
+                        </template>
 
                         <div class="list">
                             <template for:each={pagedTablesDisplay} for:item="table">

@@ -23,14 +23,9 @@ public without sharing class TableController {
             LIMIT 1
         ];
 
-        if (status == 'Available' && tbl.Current_Order__c != null) {
-            String orderStatus = tbl.Current_Order__r.Status__c;
-            if (orderStatus != null
-                && orderStatus != 'Closed'
-                && orderStatus != 'Cancelled'
-                && orderStatus != 'Served') {
-                throw new AuraHandledException('Cannot free this table — it has an active order. Complete or cancel the order first.');
-            }
+        if (hasActiveOrder(tbl.Current_Order__c, tbl.Current_Order__r != null ? tbl.Current_Order__r.Status__c : null)
+            && status != 'Occupied') {
+            throw new AuraHandledException('Cannot update this table — it has an active order. Complete, serve, or cancel the order first.');
         }
 
         tbl.Status__c = status;
@@ -72,9 +67,20 @@ public without sharing class TableController {
             recordToSave = new Restaurant_Table__c();
             recordToSave.Restaurant__c = restaurantId;
         } else {
-            recordToSave = [SELECT Id, Restaurant__c FROM Restaurant_Table__c WHERE Id = :tableId LIMIT 1];
+            recordToSave = [
+                SELECT Id, Restaurant__c, Current_Order__c, Current_Order__r.Status__c
+                FROM Restaurant_Table__c
+                WHERE Id = :tableId
+                LIMIT 1
+            ];
             if (recordToSave.Restaurant__c != restaurantId) {
                 throw new AuraHandledException('Invalid table for this restaurant.');
+            }
+            if (hasActiveOrder(
+                recordToSave.Current_Order__c,
+                recordToSave.Current_Order__r != null ? recordToSave.Current_Order__r.Status__c : null
+            )) {
+                throw new AuraHandledException('Cannot update this table — it has an active order. Complete, serve, or cancel the order first.');
             }
         }
         recordToSave.Name = name;
@@ -138,5 +144,15 @@ public without sharing class TableController {
         } else if (!describeResult.isUpdateable()) {
             throw new AuraHandledException('No update permission for ' + label + '.');
         }
+    }
+
+    private static Boolean hasActiveOrder(Id orderId, String orderStatus) {
+        if (orderId == null) {
+            return false;
+        }
+        String normalizedStatus = String.isBlank(orderStatus) ? '' : orderStatus.trim();
+        return normalizedStatus != 'Closed'
+            && normalizedStatus != 'Cancelled'
+            && normalizedStatus != 'Served';
     }
 }

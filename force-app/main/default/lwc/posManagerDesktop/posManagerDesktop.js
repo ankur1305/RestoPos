@@ -48,6 +48,7 @@ export default class PosManagerDesktop extends LightningElement {
     @track categoryDeleteError = '';
     @track transferError = '';
     @track tableFormError = '';
+    @track tableActionError = '';
     @track categoryFormError = '';
     @track itemFormError = '';
     @track tablesPage = 1;
@@ -200,6 +201,7 @@ export default class PosManagerDesktop extends LightningElement {
     openNewTable() {
         this.tableForm = { ...EMPTY_TABLE };
         this.tableFormError = '';
+        this.tableActionError = '';
         this.editModalTitle = 'Add Table';
         this.showEditTableModal = true;
     }
@@ -210,6 +212,7 @@ export default class PosManagerDesktop extends LightningElement {
         if (table) {
             this.tableForm = { ...table };
             this.tableFormError = '';
+            this.tableActionError = '';
             this.editModalTitle = 'Edit Table';
             this.showEditTableModal = true;
         }
@@ -229,6 +232,7 @@ export default class PosManagerDesktop extends LightningElement {
 
     saveTable() {
         this.tableFormError = '';
+        this.tableActionError = '';
         const name = (this.tableForm.Name || '').trim();
         if (!name) {
             this.tableFormError = 'Table name is required.';
@@ -251,12 +255,15 @@ export default class PosManagerDesktop extends LightningElement {
     }
 
     updateTableStatus(event) {
+        this.tableActionError = '';
         const tableId = event.currentTarget.dataset.id;
         const status = event.currentTarget.dataset.status;
         this.runSafely(async () => {
             await updateTableStatus({ tableId, status });
             await this.loadTables();
-        }, 'Table status updated');
+        }, 'Table status updated', (message) => {
+            this.tableActionError = message;
+        });
     }
 
     transferOrderFromSelectors() {
