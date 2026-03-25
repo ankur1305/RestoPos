@@ -8,8 +8,10 @@ export default class PosCustomerInput extends LightningElement {
 
     @track phone = '';
     @track customerName = '';
+    @track skipName = false;
+    @track skipPhone = false;
     @track customer = null;
-    @track showNewForm = false;
+    @track showNewForm = true;
     @track isSearching = false;
     @track searched = false;
 
@@ -23,6 +25,9 @@ export default class PosCustomerInput extends LightningElement {
 
     handlePhoneChange(event) {
         this.phone = normalizeIndianPhone(event.target.value);
+        if (this.phone.length > 0) {
+            this.skipPhone = false;
+        }
         this.customer = null;
         this.showNewForm = false;
         this.searched = false;
@@ -37,7 +42,8 @@ export default class PosCustomerInput extends LightningElement {
                 this.doSearch();
             }, 400);
         } else {
-            this.fireCustomerChange(null);
+            this.emitCustomerState(null);
+            this.showNewForm = true;
         }
     }
 
@@ -55,10 +61,11 @@ export default class PosCustomerInput extends LightningElement {
             if (result) {
                 this.customer = result;
                 this.customerName = result.Name;
-                this.fireCustomerChange(result.Id);
+                this.emitCustomerState(result.Id);
             } else {
                 this.customer = null;
                 this.showNewForm = true;
+                this.emitCustomerState(null);
             }
         } catch (err) {
             console.error('Customer search error:', err);
@@ -69,20 +76,38 @@ export default class PosCustomerInput extends LightningElement {
 
     handleNameChange(event) {
         this.customerName = event.target.value;
+        if ((this.customerName || '').trim().length > 0) {
+            this.skipName = false;
+        }
+        this.emitCustomerState(this.customer?.Id || null);
+    }
+
+    handleSkipNameChange(event) {
+        this.skipName = !!event.target.checked;
+        this.emitCustomerState(this.customer?.Id || null);
+    }
+
+    handleSkipPhoneChange(event) {
+        this.skipPhone = !!event.target.checked;
+        this.emitCustomerState(this.customer?.Id || null);
     }
 
     async handleCreateCustomer() {
-        if (!this.customerName) return;
-        if (this.phone.length > 0 && this.phone.length !== 10) return;
+        if (this.skipName && this.skipPhone) {
+            this.emitCustomerState(null);
+            return;
+        }
+        if (!this.skipName && !this.customerName) return;
+        if (!this.skipPhone && this.phone.length > 0 && this.phone.length !== 10) return;
         try {
             this.isSearching = true;
             this.customer = await createCustomer({
                 restaurantId: this.restaurantId,
-                name: this.customerName,
+                name: this.skipName ? 'Walk-in Customer' : this.customerName,
                 phone: this.phone
             });
             this.showNewForm = false;
-            this.fireCustomerChange(this.customer.Id);
+            this.emitCustomerState(this.customer.Id);
         } catch (err) {
             console.error('Create customer error:', err);
         } finally {
@@ -90,9 +115,19 @@ export default class PosCustomerInput extends LightningElement {
         }
     }
 
-    fireCustomerChange(customerId) {
+    emitCustomerState(customerId) {
+        const activePhone = this.customer?.Phone__c || this.phone;
+        const phoneValid = normalizeIndianPhone(activePhone).length === 10;
+        const activeName = this.customer?.Name || this.customerName;
+        const nameProvided = String(activeName || '').trim().length > 0;
         this.dispatchEvent(new CustomEvent('customerchange', {
-            detail: { customerId },
+            detail: {
+                customerId,
+                nameProvided,
+                phoneValid,
+                skipName: this.skipName,
+                skipPhone: this.skipPhone
+            },
             bubbles: true,
             composed: true
         }));
@@ -109,6 +144,8 @@ export default class PosCustomerInput extends LightningElement {
     }
 
     get isCreateDisabled() {
-        return !this.customerName || (this.phone.length > 0 && this.phone.length !== 10);
+        const hasName = this.skipName || String(this.customerName || '').trim().length > 0;
+        const hasPhone = this.skipPhone || this.phone.length === 10;
+        return !(hasName && hasPhone);
     }
 }

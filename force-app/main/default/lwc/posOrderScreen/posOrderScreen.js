@@ -22,6 +22,13 @@ export default class PosOrderScreen extends LightningElement {
     @track mobileTab = 'menu';
     @track inlineToastMessage = '';
     @track inlineToastType = 'add';
+    @track customerEntryState = {
+        customerId: null,
+        nameProvided: false,
+        phoneValid: false,
+        skipName: false,
+        skipPhone: false
+    };
     isLoading = false;
 
     _toastTimerId;
@@ -106,7 +113,15 @@ export default class PosOrderScreen extends LightningElement {
     }
 
     async handleCustomerChange(event) {
-        const customerId = event.detail.customerId;
+        const payload = event.detail || {};
+        this.customerEntryState = {
+            customerId: payload.customerId || null,
+            nameProvided: !!payload.nameProvided,
+            phoneValid: !!payload.phoneValid,
+            skipName: !!payload.skipName,
+            skipPhone: !!payload.skipPhone
+        };
+        const customerId = this.customerEntryState.customerId;
         if (this._orderId && customerId) {
             try {
                 await linkCustomerToOrder({
@@ -125,6 +140,13 @@ export default class PosOrderScreen extends LightningElement {
             this.isLoading = true;
             this.order = await getOrder({ orderId });
             this.orderItems = this.order.Order_Items__r || [];
+            this.customerEntryState = {
+                customerId: this.order?.Customer__c || null,
+                nameProvided: String(this.order?.Customer__r?.Name || '').trim().length > 0,
+                phoneValid: normalizeIndianPhone(this.order?.Customer__r?.Phone__c).length === 10,
+                skipName: false,
+                skipPhone: false
+            };
         } catch (err) {
             console.error('Load order error:', err);
         } finally {
@@ -200,8 +222,8 @@ export default class PosOrderScreen extends LightningElement {
     }
 
     async handleGenerateBill() {
-        if (!this.hasCustomer) {
-            this.showToast('Customer required', 'Link or create a customer before generating the bill.', 'error');
+        if (!this.canGenerateBill) {
+            this.showToast('Customer details incomplete', this.generateBillBlockReason, 'error');
             return;
         }
         try {
@@ -279,11 +301,38 @@ export default class PosOrderScreen extends LightningElement {
         const p = normalizeIndianPhone(this.order?.Customer__r?.Phone__c);
         return p.length === 10 ? p : '';
     }
+    get customerCriteriaSatisfied() {
+        if (this.hasCustomer) {
+            return true;
+        }
+        const nameReady = this.customerEntryState.nameProvided || this.customerEntryState.skipName;
+        const phoneReady = this.customerEntryState.phoneValid || this.customerEntryState.skipPhone;
+        return nameReady && phoneReady;
+    }
     get canGenerateBill() {
-        return this.hasItems && this.hasCustomer;
+        return this.hasItems && this.customerCriteriaSatisfied;
     }
     get generateBillDisabled() {
         return !this.canGenerateBill;
+    }
+    get generateBillBlockReason() {
+        if (!this.hasItems) {
+            return 'Add at least one item before generating the bill.';
+        }
+        if (this.hasCustomer) {
+            return 'Unable to generate bill right now.';
+        }
+        const missing = [];
+        if (!(this.customerEntryState.nameProvided || this.customerEntryState.skipName)) {
+            missing.push('customer name (or check Skip Name)');
+        }
+        if (!(this.customerEntryState.phoneValid || this.customerEntryState.skipPhone)) {
+            missing.push('10-digit phone (or check Skip Phone)');
+        }
+        if (missing.length === 0) {
+            return 'Complete customer details to generate the bill.';
+        }
+        return 'Please provide ' + missing.join(' and ') + '.';
     }
     get itemCount() { return this.orderItems ? this.orderItems.length : 0; }
     get cartTabLabel() { return 'Cart (' + this.itemCount + ')'; }

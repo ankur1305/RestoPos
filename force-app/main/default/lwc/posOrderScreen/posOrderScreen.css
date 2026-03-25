@@ -125,16 +125,11 @@
     }
 
     .generate-bill-btn {
-        display: none !important;
+        display: flex !important;
     }
 
     .mobile-bill-note {
-        display: block;
-        text-align: center;
-        font-size: 0.6875rem;
-        color: var(--color-text-muted);
-        margin-top: 0.5rem;
-        font-style: italic;
+        display: none;
     }
 
     .menu-panel {
@@ -250,6 +245,12 @@ c-pos-menu-browser {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .inline-toast {
+        margin-bottom: 0.5rem;
+    }
 }
 
 .inline-toast-remove {

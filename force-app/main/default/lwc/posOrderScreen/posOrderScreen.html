@@ -6,6 +6,12 @@
             <button class={cartTabClass} onclick={handleMobileTabCart}>{cartTabLabel}</button>
             <button class="mobile-tab back-tab" onclick={handleBack}>Tables</button>
         </div>
+        <template lwc:if={inlineToastMessage}>
+            <div class={inlineToastClass}>
+                <span>{inlineToastMessage}</span>
+                <button type="button" class="inline-toast-close" onclick={dismissInlineToast} aria-label="Dismiss message">&times;</button>
+            </div>
+        </template>
 
         <div class={layoutClass}>
             <div class="menu-panel" data-mobile-tab="menu">
@@ -31,13 +37,6 @@
                         Tables
                     </button>
                 </div>
-
-                <template lwc:if={inlineToastMessage}>
-                    <div class={inlineToastClass}>
-                        <span>{inlineToastMessage}</span>
-                        <button type="button" class="inline-toast-close" onclick={dismissInlineToast} aria-label="Dismiss message">&times;</button>
-                    </div>
-                </template>
 
                 <div class="customer-section">
                     <template lwc:if={hasCustomer}>
@@ -122,7 +121,6 @@
                             Generate Bill
                         </button>
                     </div>
-                    <div class="mobile-bill-note">Ask reception to generate the bill</div>
                 </div>
 
                 <!-- Cancel Confirmation Modal -->
