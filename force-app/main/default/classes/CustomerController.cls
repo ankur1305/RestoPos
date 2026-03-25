@@ -25,12 +25,13 @@ public without sharing class CustomerController {
         if (String.isBlank(name)) {
             throw new AuraHandledException('Customer name is required.');
         }
-        if (!isTenDigitPhone(phone)) {
+        String normalizedPhone = String.isBlank(phone) ? null : phone.trim();
+        if (String.isNotBlank(normalizedPhone) && !isTenDigitPhone(normalizedPhone)) {
             throw new AuraHandledException('Phone must be exactly 10 digits.');
         }
         Customer__c cust = new Customer__c(
             Name = name,
-            Phone__c = phone,
+            Phone__c = normalizedPhone,
             Restaurant__c = restaurantId,
             Visit_Count__c = 0
         );

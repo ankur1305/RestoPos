@@ -72,7 +72,8 @@ export default class PosCustomerInput extends LightningElement {
     }
 
     async handleCreateCustomer() {
-        if (!this.customerName || this.phone.length !== 10) return;
+        if (!this.customerName) return;
+        if (this.phone.length > 0 && this.phone.length !== 10) return;
         try {
             this.isSearching = true;
             this.customer = await createCustomer({
@@ -108,6 +109,6 @@ export default class PosCustomerInput extends LightningElement {
     }
 
     get isCreateDisabled() {
-        return !this.customerName || this.phone.length !== 10;
+        return !this.customerName || (this.phone.length > 0 && this.phone.length !== 10);
     }
 }

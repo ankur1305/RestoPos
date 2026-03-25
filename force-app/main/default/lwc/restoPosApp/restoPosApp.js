@@ -14,6 +14,7 @@ export default class RestoPosApp extends LightningElement {
     @track managerPin = '';
     @track managerPinError = '';
     isLoading = false;
+    shouldFocusManagerPin = false;
 
     get isLoginView() { return this.currentView === 'login'; }
     get isTableView() { return this.currentView === 'tables'; }
@@ -107,6 +108,7 @@ export default class RestoPosApp extends LightningElement {
         this.managerPin = '';
         this.managerPinError = '';
         this.showManagerPinModal = true;
+        this.shouldFocusManagerPin = true;
     }
 
     handleManagerPinInput(event) {
@@ -153,6 +155,7 @@ export default class RestoPosApp extends LightningElement {
         this.showManagerPinModal = false;
         this.managerPin = '';
         this.managerPinError = '';
+        this.shouldFocusManagerPin = false;
     }
 
     handleManagerPinKeyup(event) {
@@ -169,5 +172,16 @@ export default class RestoPosApp extends LightningElement {
 
     stopPropagation(event) {
         event.stopPropagation();
+    }
+
+    renderedCallback() {
+        if (!this.showManagerPinModal || !this.shouldFocusManagerPin) {
+            return;
+        }
+        const managerPinInput = this.template.querySelector('lightning-input');
+        if (managerPinInput && typeof managerPinInput.focus === 'function') {
+            managerPinInput.focus();
+            this.shouldFocusManagerPin = false;
+        }
     }
 }

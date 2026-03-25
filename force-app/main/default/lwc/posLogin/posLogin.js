@@ -1,7 +1,7 @@
 import { LightningElement, track } from 'lwc';
 
 export default class PosLogin extends LightningElement {
-    @track restaurantCode = 'TCH001';
+    @track restaurantCode = '';
     @track pin = '';
 
     handleCodeChange(event) {

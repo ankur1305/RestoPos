@@ -201,11 +201,7 @@ export default class PosOrderScreen extends LightningElement {
 
     async handleGenerateBill() {
         if (!this.hasCustomer) {
-            this.showToast('Customer required', 'Link a customer with a 10-digit phone before generating the bill.', 'error');
-            return;
-        }
-        if (!this.hasValidCustomerPhone) {
-            this.showToast('Phone required', 'Customer must have a valid 10-digit mobile number.', 'error');
+            this.showToast('Customer required', 'Link or create a customer before generating the bill.', 'error');
             return;
         }
         try {
@@ -284,7 +280,7 @@ export default class PosOrderScreen extends LightningElement {
         return p.length === 10 ? p : '';
     }
     get canGenerateBill() {
-        return this.hasItems && this.hasCustomer && this.hasValidCustomerPhone;
+        return this.hasItems && this.hasCustomer;
     }
     get generateBillDisabled() {
         return !this.canGenerateBill;
