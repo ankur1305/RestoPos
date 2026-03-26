@@ -89,8 +89,13 @@
                 <!-- ═══ MENU TAB ═══ -->
                 <template lwc:if={isMenuTab}>
                     <div class="pad">
-                        <div class="dual-section">
-                            <!-- Categories -->
+                        <div class="subtab-bar">
+                            <button type="button" class={menuCategoriesTabClass} data-subtab="categories" onclick={handleMenuSubTabChange}>Categories</button>
+                            <button type="button" class={menuBulkTabClass} data-subtab="bulk" onclick={handleMenuSubTabChange}>Bulk Availability</button>
+                            <button type="button" class={menuItemsTabClass} data-subtab="items" onclick={handleMenuSubTabChange}>Menu Items</button>
+                        </div>
+
+                        <template lwc:if={isMenuCategoriesSubTab}>
                             <div class="section-card">
                                 <div class="section-card-header">
                                     <span>Categories</span>
@@ -118,8 +123,9 @@
                                     </template>
                                 </div>
                             </div>
+                        </template>
 
-                            <!-- Bulk Actions -->
+                        <template lwc:if={isMenuBulkSubTab}>
                             <div class="section-card">
                                 <div class="section-card-header">
                                     <span>Bulk Availability</span>
@@ -139,9 +145,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </template>
 
                         <!-- Menu Items List -->
+                        <template lwc:if={isMenuItemsSubTab}>
                         <div class="section-card menu-items-card">
                             <div class="section-card-header">
                                 <span>Menu Items</span>
@@ -204,6 +211,7 @@
                                 </template>
                             </div>
                         </div>
+                        </template>
                     </div>
                 </template>
 
@@ -497,10 +505,10 @@
     <!-- ═══ EDIT TABLE MODAL ═══ -->
     <template lwc:if={showEditTableModal}>
         <div class="modal-overlay" onclick={closeTableModal} onkeydown={handleTableModalKeydown}>
-            <div class="modal-card" onclick={stopPropagation}>
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Edit table" onclick={stopPropagation}>
                 <div class="modal-header">
                     <h3 class="modal-title">{editModalTitle}</h3>
-                    <button type="button" class="modal-close" onclick={closeTableModal}>&times;</button>
+                    <button type="button" class="modal-close" onclick={closeTableModal} aria-label="Close table modal">&times;</button>
                 </div>
                 <div class="modal-body form-col">
                     <template lwc:if={tableFormError}>
@@ -524,10 +532,10 @@
     <!-- ═══ EDIT CATEGORY MODAL ═══ -->
     <template lwc:if={showEditCategoryModal}>
         <div class="modal-overlay" onclick={closeCategoryModal} onkeydown={handleCategoryModalKeydown}>
-            <div class="modal-card" onclick={stopPropagation}>
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Edit category" onclick={stopPropagation}>
                 <div class="modal-header">
                     <h3 class="modal-title">{editModalTitle}</h3>
-                    <button type="button" class="modal-close" onclick={closeCategoryModal}>&times;</button>
+                    <button type="button" class="modal-close" onclick={closeCategoryModal} aria-label="Close category modal">&times;</button>
                 </div>
                 <div class="modal-body form-col">
                     <template lwc:if={categoryFormError}>
@@ -537,7 +545,6 @@
                         </div>
                     </template>
                     <lightning-input label="Name" name="Name" value={categoryForm.Name} onchange={handleCategoryInput}></lightning-input>
-                    <lightning-input label="Icon" name="Icon__c" value={categoryForm.Icon__c} onchange={handleCategoryInput}></lightning-input>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost" onclick={closeCategoryModal}>Cancel</button>
@@ -550,10 +557,10 @@
     <!-- ═══ EDIT MENU ITEM MODAL ═══ -->
     <template lwc:if={showEditItemModal}>
         <div class="modal-overlay" onclick={closeItemModal} onkeydown={handleItemModalKeydown}>
-            <div class="modal-card modal-card-wide" onclick={stopPropagation}>
+            <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-label="Edit menu item" onclick={stopPropagation}>
                 <div class="modal-header">
                     <h3 class="modal-title">{editModalTitle}</h3>
-                    <button type="button" class="modal-close" onclick={closeItemModal}>&times;</button>
+                    <button type="button" class="modal-close" onclick={closeItemModal} aria-label="Close menu item modal">&times;</button>
                 </div>
                 <div class="modal-body form-col">
                     <template lwc:if={itemFormError}>
@@ -580,10 +587,10 @@
     <!-- ═══ ORDER DETAILS MODAL ═══ -->
     <template lwc:if={showOrderDetailsModal}>
         <div class="modal-overlay" onclick={closeOrderDetailsModal} onkeydown={handleOrderDetailsModalKeydown}>
-            <div class="modal-card modal-card-xl" onclick={stopPropagation}>
+            <div class="modal-card modal-card-xl" role="dialog" aria-modal="true" aria-label="Order details" onclick={stopPropagation}>
                 <div class="modal-header">
                     <h3 class="modal-title">Order {selectedOrderDetail.orderName}</h3>
-                    <button type="button" class="modal-close" onclick={closeOrderDetailsModal}>&times;</button>
+                    <button type="button" class="modal-close" onclick={closeOrderDetailsModal} aria-label="Close order details modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="order-modal-grid">

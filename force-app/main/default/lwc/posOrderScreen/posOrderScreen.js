@@ -1,5 +1,4 @@
 import { LightningElement, api, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import createOrder from '@salesforce/apex/OrderController.createOrder';
 import getOrder from '@salesforce/apex/OrderController.getOrder';
 import addOrderItem from '@salesforce/apex/OrderController.addOrderItem';
@@ -9,7 +8,7 @@ import closeOrder from '@salesforce/apex/OrderController.closeOrder';
 import getOrderCartSnapshot from '@salesforce/apex/OrderController.getOrderCartSnapshot';
 import updateOrderStatus from '@salesforce/apex/OrderController.updateOrderStatus';
 import linkCustomerToOrder from '@salesforce/apex/OrderController.linkCustomerToOrder';
-import { normalizeIndianPhone } from 'c/posUtils';
+import { normalizeIndianPhone, notify, extractErrorMessage } from 'c/posUtils';
 
 export default class PosOrderScreen extends LightningElement {
     @api restaurantId;
@@ -22,6 +21,7 @@ export default class PosOrderScreen extends LightningElement {
     @track mobileTab = 'menu';
     @track inlineToastMessage = '';
     @track inlineToastType = 'add';
+    @track showCustomerModal = false;
     @track customerEntryState = {
         customerId: null,
         nameProvided: false,
@@ -32,6 +32,7 @@ export default class PosOrderScreen extends LightningElement {
     isLoading = false;
 
     _toastTimerId;
+    shouldFocusCancelPrimary = false;
 
     _orderId;
     @api
@@ -129,10 +130,19 @@ export default class PosOrderScreen extends LightningElement {
                     customerId: customerId
                 });
                 await this.loadOrder(this._orderId);
+                this.showCustomerModal = false;
             } catch (err) {
                 console.error('Link customer error:', err);
             }
         }
+    }
+
+    openCustomerModal() {
+        this.showCustomerModal = true;
+    }
+
+    closeCustomerModal() {
+        this.showCustomerModal = false;
     }
 
     async loadOrder(orderId) {
@@ -187,7 +197,7 @@ export default class PosOrderScreen extends LightningElement {
             await this.refreshCartOnly();
             this.showInlineToast('Item added to cart', 'add');
         } catch (err) {
-            this.showToast('Error', err?.body?.message || 'Unable to add item.', 'error');
+            this.showToast('Error', extractErrorMessage(err, 'Unable to add item.'), 'error');
             await this.refreshMenuBrowser();
         }
     }
@@ -221,6 +231,28 @@ export default class PosOrderScreen extends LightningElement {
         }
     }
 
+    async handleAdjustItemQty(event) {
+        const menuItemId = event.detail?.menuItemId;
+        const delta = Number(event.detail?.delta || 0);
+        if (!menuItemId || delta === 0) {
+            return;
+        }
+        const line = (this.orderItems || []).find((item) => item.Menu_Item__c === menuItemId);
+        if (delta < 0) {
+            if (!line) {
+                return;
+            }
+            const newQty = Number(line.Quantity__c || 0) - 1;
+            if (newQty <= 0) {
+                await this.handleRemoveItem({ detail: { itemId: line.Id } });
+            } else {
+                await this.handleUpdateQuantity({ detail: { itemId: line.Id, quantity: newQty } });
+            }
+            return;
+        }
+        await this.handleAddItem({ detail: { menuItemId, quantity: 1, notes: '' } });
+    }
+
     async handleGenerateBill() {
         if (!this.canGenerateBill) {
             this.showToast('Customer details incomplete', this.generateBillBlockReason, 'error');
@@ -234,7 +266,7 @@ export default class PosOrderScreen extends LightningElement {
             }));
         } catch (err) {
             console.error('Generate bill error:', err);
-            this.showToast('Error', err?.body?.message || 'Failed to generate bill.', 'error');
+            this.showToast('Error', extractErrorMessage(err, 'Failed to generate bill.'), 'error');
         } finally {
             this.isLoading = false;
         }
@@ -242,10 +274,12 @@ export default class PosOrderScreen extends LightningElement {
 
     handleShowCancelConfirm() {
         this.showCancelConfirm = true;
+        this.shouldFocusCancelPrimary = true;
     }
 
     handleCloseCancelConfirm() {
         this.showCancelConfirm = false;
+        this.shouldFocusCancelPrimary = false;
     }
 
     stopPropagation(event) {
@@ -278,7 +312,7 @@ export default class PosOrderScreen extends LightningElement {
     }
 
     showToast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+        notify(this, title, message, variant);
     }
 
 
@@ -334,7 +368,22 @@ export default class PosOrderScreen extends LightningElement {
         }
         return 'Please provide ' + missing.join(' and ') + '.';
     }
+
+    get showGenerateBillHint() {
+        return this.generateBillDisabled;
+    }
     get itemCount() { return this.orderItems ? this.orderItems.length : 0; }
+    get cartItemQuantities() {
+        const quantities = {};
+        (this.orderItems || []).forEach((item) => {
+            const key = item.Menu_Item__c;
+            if (!key) {
+                return;
+            }
+            quantities[key] = Number(item.Quantity__c || 0);
+        });
+        return quantities;
+    }
     get cartTabLabel() { return 'Cart (' + this.itemCount + ')'; }
     get isMenuTab() { return this.mobileTab === 'menu'; }
     get isCartTab() { return this.mobileTab === 'cart'; }
@@ -357,5 +406,16 @@ export default class PosOrderScreen extends LightningElement {
     }
     get formattedDiscount() { return '-₹' + this.discountAmount; }
     get formattedTotal() { return '₹' + this.orderTotal; }
+
+    renderedCallback() {
+        if (!this.showCancelConfirm || !this.shouldFocusCancelPrimary) {
+            return;
+        }
+        const confirmBtn = this.template.querySelector('.cancel-confirm-primary');
+        if (confirmBtn && typeof confirmBtn.focus === 'function') {
+            confirmBtn.focus();
+            this.shouldFocusCancelPrimary = false;
+        }
+    }
 
 }

@@ -245,6 +245,33 @@
     color: var(--color-text, #0f172a);
 }
 
+.subtab-bar {
+    display: flex;
+    gap: 0.4rem;
+    background: var(--color-surface-alt, #f1f5f9);
+    border-radius: 8px;
+    padding: 0.25rem;
+    margin-bottom: 0.8rem;
+}
+
+.subtab-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary, #64748b);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.subtab-btn.active {
+    background: var(--color-surface, #fff);
+    color: var(--color-primary, #4f46e5);
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
+}
+
 /* ── Cards & Layout ──────────────────── */
 
 .dual-section {
@@ -910,7 +937,7 @@
     width: 90%;
     max-width: 420px;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .modal-card-wide {
@@ -1065,6 +1092,11 @@
         min-width: 0;
         padding: 0.52rem 0.45rem;
         font-size: 0.74rem;
+    }
+
+    .subtab-bar {
+        display: grid;
+        grid-template-columns: 1fr;
     }
 
     .section-toolbar {

@@ -1,9 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getTables from '@salesforce/apex/TableController.getTables';
 import occupyTable from '@salesforce/apex/TableController.occupyTable';
 import updateTableStatus from '@salesforce/apex/TableController.updateTableStatus';
 import createOrder from '@salesforce/apex/OrderController.createOrder';
+import { notify, extractErrorMessage } from 'c/posUtils';
 
 export default class PosTableView extends LightningElement {
     @api restaurantId;
@@ -107,7 +107,7 @@ export default class PosTableView extends LightningElement {
             this.handleCloseActions();
             await this.loadTables();
         } catch (err) {
-            this.actionError = err.body?.message || 'Failed to occupy table';
+            this.actionError = extractErrorMessage(err, 'Failed to occupy table');
         } finally {
             this.isLoading = false;
         }
@@ -129,7 +129,7 @@ export default class PosTableView extends LightningElement {
                 detail: { tableId: this.selectedTable.Id, orderId: order.Id }
             }));
         } catch (err) {
-            this.actionError = err.body?.message || 'Failed to start order';
+            this.actionError = extractErrorMessage(err, 'Failed to start order');
         } finally {
             this.isLoading = false;
         }
@@ -148,7 +148,7 @@ export default class PosTableView extends LightningElement {
                 detail: { tableId: this.selectedTable.Id, orderId: order.Id }
             }));
         } catch (err) {
-            this.actionError = err.body?.message || 'Failed to start order';
+            this.actionError = extractErrorMessage(err, 'Failed to start order');
         } finally {
             this.isLoading = false;
         }
@@ -161,7 +161,7 @@ export default class PosTableView extends LightningElement {
             this.handleCloseActions();
             await this.loadTables();
         } catch (err) {
-            this.actionError = err.body?.message || 'Failed to reserve table';
+            this.actionError = extractErrorMessage(err, 'Failed to reserve table');
         } finally {
             this.isLoading = false;
         }
@@ -174,7 +174,7 @@ export default class PosTableView extends LightningElement {
             this.handleCloseActions();
             await this.loadTables();
         } catch (err) {
-            this.actionError = err.body?.message || 'Cannot free this table';
+            this.actionError = extractErrorMessage(err, 'Cannot free this table');
         } finally {
             this.isLoading = false;
         }
@@ -240,11 +240,7 @@ export default class PosTableView extends LightningElement {
         const message = this.autoRefreshPeriod > 0
             ? `Auto-refresh set to ${this.autoRefreshPeriod / 1000}s`
             : 'Auto-refresh disabled';
-        this.dispatchEvent(new ShowToastEvent({
-            title: 'Table refresh',
-            message,
-            variant: 'success'
-        }));
+        notify(this, 'Table refresh', message, 'success');
     }
 
     handleRefresh() {

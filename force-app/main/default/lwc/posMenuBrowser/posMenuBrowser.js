@@ -9,6 +9,7 @@ const SEARCH_DEBOUNCE_MS = 280;
 export default class PosMenuBrowser extends LightningElement {
     @api restaurantId;
     @api currencyCode;
+    @api cartItemQuantities = {};
     @track categories = [];
     @track allItems = [];
     @track decoratedItems = [];
@@ -129,6 +130,26 @@ export default class PosMenuBrowser extends LightningElement {
         }));
     }
 
+    handleIncrementItem(event) {
+        event.stopPropagation();
+        const menuItemId = event.currentTarget.dataset.id;
+        this.dispatchEvent(new CustomEvent('adjustitemqty', {
+            detail: { menuItemId, delta: 1 },
+            bubbles: true,
+            composed: true
+        }));
+    }
+
+    handleDecrementItem(event) {
+        event.stopPropagation();
+        const menuItemId = event.currentTarget.dataset.id;
+        this.dispatchEvent(new CustomEvent('adjustitemqty', {
+            detail: { menuItemId, delta: -1 },
+            bubbles: true,
+            composed: true
+        }));
+    }
+
     get items() {
         return this.decoratedItems;
     }
@@ -154,7 +175,8 @@ export default class PosMenuBrowser extends LightningElement {
         return (rawItems || []).map((item) => ({
             ...item,
             itemClass: 'menu-item-row' + (item.Is_Available__c ? '' : ' sold-out'),
-            isDisabled: !item.Is_Available__c
+            isDisabled: !item.Is_Available__c,
+            inCartQty: Number(this.cartItemQuantities?.[item.Id] || 0)
         }));
     }
 

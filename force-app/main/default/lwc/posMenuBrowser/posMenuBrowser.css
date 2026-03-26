@@ -239,6 +239,36 @@
     flex-shrink: 0;
 }
 
+.qty-inline-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 999px;
+    padding: 0.2rem 0.3rem;
+    background: var(--color-surface, #fff);
+}
+
+.qty-inline-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    border: 0;
+    background: var(--color-primary-light, #eef2ff);
+    color: var(--color-primary, #4f46e5);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.qty-inline-value {
+    min-width: 1.1rem;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text, #0f172a);
+}
+
 .item-price {
     font-size: var(--font-size-base);
     font-weight: 700;

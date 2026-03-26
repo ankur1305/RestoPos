@@ -81,7 +81,16 @@
                         </div>
                         <div class="item-right">
                             <span class="item-price">₹{item.Price__c}</span>
-                            <button class="add-btn" disabled={item.isDisabled}>+</button>
+                            <template lwc:if={item.inCartQty}>
+                                <div class="qty-inline-controls">
+                                    <button type="button" class="qty-inline-btn" data-id={item.Id} onclick={handleDecrementItem}>−</button>
+                                    <span class="qty-inline-value">{item.inCartQty}</span>
+                                    <button type="button" class="qty-inline-btn" data-id={item.Id} onclick={handleIncrementItem}>+</button>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <button class="add-btn" disabled={item.isDisabled}>+</button>
+                            </template>
                         </div>
                     </div>
                 </template>

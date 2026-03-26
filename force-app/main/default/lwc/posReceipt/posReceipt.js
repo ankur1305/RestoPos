@@ -1,8 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getReceiptData from '@salesforce/apex/ReceiptController.getReceiptData';
 import getReceiptPdfBase64 from '@salesforce/apex/ReceiptController.getReceiptPdfBase64';
 import updateOrderPaymentDetails from '@salesforce/apex/OrderController.updateOrderPaymentDetails';
+import { notify, extractErrorMessage } from 'c/posUtils';
 
 export default class PosReceipt extends LightningElement {
     _receiptId;
@@ -82,7 +82,7 @@ export default class PosReceipt extends LightningElement {
                     /* ignore */
                 }
                 console.error('Receipt download error:', error);
-                this.showToast('Error', this.getDownloadErrorMessage(error), 'error');
+                this.showToast('Error', extractErrorMessage(error, 'Could not generate the receipt PDF.'), 'error');
             })
             .finally(() => {
                 window.setTimeout(() => {
@@ -98,17 +98,6 @@ export default class PosReceipt extends LightningElement {
             bytes[i] = binary.charCodeAt(i);
         }
         return new Blob([bytes], { type: 'application/pdf' });
-    }
-
-    getDownloadErrorMessage(error) {
-        const raw = error?.body?.message;
-        if (Array.isArray(raw)) {
-            return raw.join(' ');
-        }
-        if (typeof raw === 'string') {
-            return raw;
-        }
-        return error?.message || 'Could not generate the receipt PDF.';
     }
 
     handleBack() {
@@ -145,20 +134,14 @@ export default class PosReceipt extends LightningElement {
             this.showToast('Success', 'Payment details updated.', 'success');
         } catch (err) {
             console.error('Payment update error:', err);
-            this.showToast('Error', err?.body?.message || 'Failed to update payment details.', 'error');
+            this.showToast('Error', extractErrorMessage(err, 'Failed to update payment details.'), 'error');
         } finally {
             this.isSavingPayment = false;
         }
     }
 
     showToast(title, message, variant) {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title,
-                message,
-                variant
-            })
-        );
+        notify(this, title, message, variant);
     }
 
     get restaurantName() {
@@ -259,5 +242,9 @@ export default class PosReceipt extends LightningElement {
             { label: 'Partial', value: 'Partial' },
             { label: 'Paid', value: 'Paid' }
         ];
+    }
+
+    get isPaymentSaveDisabled() {
+        return this.isSavingPayment || !this.paymentForm?.method || !this.paymentForm?.status;
     }
 }

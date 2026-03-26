@@ -66,7 +66,7 @@
 
         <template lwc:if={showManagerPinModal}>
             <div class="manager-pin-overlay" onclick={closeManagerPinModal}>
-                <div class="manager-pin-modal" onclick={stopPropagation}>
+                <div class="manager-pin-modal" role="dialog" aria-modal="true" aria-label="Manager PIN verification" onclick={stopPropagation}>
                     <h3 class="manager-pin-title">Manager Access</h3>
                     <p class="manager-pin-subtitle">Enter Manager PIN to continue.</p>
                     <lightning-input

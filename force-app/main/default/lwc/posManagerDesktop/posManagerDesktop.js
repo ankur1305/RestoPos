@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { notify, extractErrorMessage } from 'c/posUtils';
 import getManagerTables from '@salesforce/apex/TableController.getManagerTables';
 import upsertTable from '@salesforce/apex/TableController.upsertTable';
 import updateTableStatus from '@salesforce/apex/TableController.updateTableStatus';
@@ -23,6 +23,7 @@ export default class PosManagerDesktop extends LightningElement {
     @api currencyCode;
 
     @track activeTab = 'tables';
+    @track menuSubTab = 'categories';
     @track isLoading = false;
     @track tables = [];
     @track menuCategories = [];
@@ -67,13 +68,18 @@ export default class PosManagerDesktop extends LightningElement {
     @track showOrderDetailsModal = false;
     @track selectedOrderDetail = null;
     @track editModalTitle = '';
+    _modalKeyHandler;
+    _modalFocusPending = false;
 
     connectedCallback() {
         this.initialize();
     }
 
     disconnectedCallback() {
-        // no-op
+        if (this._modalKeyHandler) {
+            window.removeEventListener('keydown', this._modalKeyHandler);
+            this._modalKeyHandler = null;
+        }
     }
 
     async initialize() {
@@ -124,7 +130,7 @@ export default class PosManagerDesktop extends LightningElement {
                 this.toast('Success', successMessage, 'success');
             }
         } catch (error) {
-            const message = this.getErrorMessage(error);
+            const message = extractErrorMessage(error, 'Action failed');
             this.toast('Error', message, 'error');
             if (typeof onError === 'function') {
                 onError(message);
@@ -134,43 +140,16 @@ export default class PosManagerDesktop extends LightningElement {
         }
     }
 
-    getErrorMessage(error) {
-        if (!error) {
-            return 'Action failed';
-        }
-
-        if (error.body) {
-            if (typeof error.body.message === 'string' && error.body.message) {
-                return error.body.message;
-            }
-            if (Array.isArray(error.body.pageErrors) && error.body.pageErrors.length) {
-                return error.body.pageErrors[0].message || 'Action failed';
-            }
-            if (error.body.output) {
-                const outputErrors = error.body.output.errors;
-                if (Array.isArray(outputErrors) && outputErrors.length) {
-                    return outputErrors[0].message || 'Action failed';
-                }
-                const fieldErrors = error.body.output.fieldErrors || {};
-                const firstField = Object.keys(fieldErrors)[0];
-                if (firstField && Array.isArray(fieldErrors[firstField]) && fieldErrors[firstField].length) {
-                    return fieldErrors[firstField][0].message || 'Action failed';
-                }
-            }
-        }
-
-        if (typeof error.message === 'string' && error.message) {
-            return error.message;
-        }
-        return 'Action failed';
-    }
-
     toast(title, message, variant) {
-        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
+        notify(this, title, message, variant);
     }
 
     handleCustomTabChange(event) {
         this.activeTab = event.currentTarget.dataset.tab;
+    }
+
+    handleMenuSubTabChange(event) {
+        this.menuSubTab = event.currentTarget.dataset.subtab;
     }
 
     get tablesTabClass() {
@@ -185,6 +164,30 @@ export default class PosManagerDesktop extends LightningElement {
         return 'tab-btn' + (this.activeTab === 'reports' ? ' active' : '');
     }
 
+    get menuCategoriesTabClass() {
+        return 'subtab-btn' + (this.menuSubTab === 'categories' ? ' active' : '');
+    }
+
+    get menuBulkTabClass() {
+        return 'subtab-btn' + (this.menuSubTab === 'bulk' ? ' active' : '');
+    }
+
+    get menuItemsTabClass() {
+        return 'subtab-btn' + (this.menuSubTab === 'items' ? ' active' : '');
+    }
+
+    get isMenuCategoriesSubTab() {
+        return this.menuSubTab === 'categories';
+    }
+
+    get isMenuBulkSubTab() {
+        return this.menuSubTab === 'bulk';
+    }
+
+    get isMenuItemsSubTab() {
+        return this.menuSubTab === 'items';
+    }
+
     // ── Tables ──────────────────────────────
     handleTableInput(event) {
         this.tableForm = { ...this.tableForm, [event.target.name]: event.target.value };
@@ -196,6 +199,7 @@ export default class PosManagerDesktop extends LightningElement {
         this.tableActionError = '';
         this.editModalTitle = 'Add Table';
         this.showEditTableModal = true;
+        this.prepareModalFocus();
     }
 
     editTable(event) {
@@ -207,6 +211,7 @@ export default class PosManagerDesktop extends LightningElement {
             this.tableActionError = '';
             this.editModalTitle = 'Edit Table';
             this.showEditTableModal = true;
+            this.prepareModalFocus();
         }
     }
 
@@ -214,6 +219,7 @@ export default class PosManagerDesktop extends LightningElement {
         this.showEditTableModal = false;
         this.tableForm = { ...EMPTY_TABLE };
         this.tableFormError = '';
+        this.teardownModalHandlerIfIdle();
     }
 
     handleTableModalKeydown(event) {
@@ -307,6 +313,7 @@ export default class PosManagerDesktop extends LightningElement {
         this.categoryFormError = '';
         this.editModalTitle = 'Add Category';
         this.showEditCategoryModal = true;
+        this.prepareModalFocus();
     }
 
     editCategory(event) {
@@ -317,6 +324,7 @@ export default class PosManagerDesktop extends LightningElement {
             this.categoryFormError = '';
             this.editModalTitle = 'Edit Category';
             this.showEditCategoryModal = true;
+            this.prepareModalFocus();
         }
     }
 
@@ -324,6 +332,7 @@ export default class PosManagerDesktop extends LightningElement {
         this.showEditCategoryModal = false;
         this.categoryForm = { ...EMPTY_CATEGORY };
         this.categoryFormError = '';
+        this.teardownModalHandlerIfIdle();
     }
 
     handleCategoryModalKeydown(event) {
@@ -392,6 +401,7 @@ export default class PosManagerDesktop extends LightningElement {
         this.itemFormError = '';
         this.editModalTitle = 'Add Menu Item';
         this.showEditItemModal = true;
+        this.prepareModalFocus();
     }
 
     editItem(event) {
@@ -402,12 +412,14 @@ export default class PosManagerDesktop extends LightningElement {
             this.itemFormError = '';
             this.editModalTitle = 'Edit Menu Item';
             this.showEditItemModal = true;
+            this.prepareModalFocus();
         }
     }
 
     closeItemModal() {
         this.showEditItemModal = false;
         this.itemFormError = '';
+        this.teardownModalHandlerIfIdle();
     }
 
     handleItemModalKeydown(event) {
@@ -1128,11 +1140,13 @@ export default class PosManagerDesktop extends LightningElement {
         }
         this.selectedOrderDetail = orderDetail;
         this.showOrderDetailsModal = true;
+        this.prepareModalFocus();
     }
 
     closeOrderDetailsModal() {
         this.showOrderDetailsModal = false;
         this.selectedOrderDetail = null;
+        this.teardownModalHandlerIfIdle();
     }
 
     handleOrderDetailsModalKeydown(event) {
@@ -1201,11 +1215,54 @@ export default class PosManagerDesktop extends LightningElement {
         event.stopPropagation();
     }
 
+    prepareModalFocus() {
+        this._modalFocusPending = true;
+        if (this._modalKeyHandler) {
+            return;
+        }
+        this._modalKeyHandler = (event) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+            if (this.showEditItemModal) {
+                this.closeItemModal();
+            } else if (this.showEditCategoryModal) {
+                this.closeCategoryModal();
+            } else if (this.showEditTableModal) {
+                this.closeTableModal();
+            } else if (this.showOrderDetailsModal) {
+                this.closeOrderDetailsModal();
+            }
+        };
+        window.addEventListener('keydown', this._modalKeyHandler);
+    }
+
+    teardownModalHandlerIfIdle() {
+        if (this.showEditItemModal || this.showEditCategoryModal || this.showEditTableModal || this.showOrderDetailsModal) {
+            return;
+        }
+        if (this._modalKeyHandler) {
+            window.removeEventListener('keydown', this._modalKeyHandler);
+            this._modalKeyHandler = null;
+        }
+    }
+
     clearInlineMessage(event) {
         const target = event.currentTarget?.dataset?.target;
         if (!target) {
             return;
         }
         this[target] = '';
+    }
+
+    renderedCallback() {
+        if (!this._modalFocusPending) {
+            return;
+        }
+        const firstInput = this.template.querySelector('.modal-card lightning-input, .modal-card lightning-combobox, .modal-card button');
+        if (firstInput && typeof firstInput.focus === 'function') {
+            firstInput.focus();
+            this._modalFocusPending = false;
+        }
     }
 }

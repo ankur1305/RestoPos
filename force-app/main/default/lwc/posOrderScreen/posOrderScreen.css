@@ -147,6 +147,10 @@
 
     .order-footer {
         padding: 0.75rem;
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        box-shadow: 0 -6px 12px rgba(15, 23, 42, 0.08);
     }
 
     .customer-section {
@@ -270,6 +274,14 @@ c-pos-menu-browser {
 
 .customer-section {
     padding: 0 1rem;
+}
+
+.customer-action-row {
+    padding: 0.625rem 0;
+}
+
+.add-customer-btn {
+    width: 100%;
 }
 
 .customer-card {
@@ -430,6 +442,12 @@ c-pos-menu-browser {
 .action-buttons {
     display: flex;
     gap: 0.5rem;
+}
+
+.generate-bill-hint {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--color-text-secondary, #64748b);
 }
 
 .action-btn {

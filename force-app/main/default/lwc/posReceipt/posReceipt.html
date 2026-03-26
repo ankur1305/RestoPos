@@ -42,7 +42,7 @@
                         options={paymentStatusOptions}
                         onchange={handlePaymentFieldChange}
                     ></lightning-combobox>
-                    <button type="button" class="action-btn primary payment-save-btn" onclick={handleSavePayment} disabled={isSavingPayment}>
+                    <button type="button" class="action-btn primary payment-save-btn" onclick={handleSavePayment} disabled={isPaymentSaveDisabled}>
                         <template lwc:if={isSavingPayment}>Saving…</template>
                         <template lwc:else>Update Payment</template>
                     </button>

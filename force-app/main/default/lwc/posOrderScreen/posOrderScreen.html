@@ -22,7 +22,9 @@
                 <c-pos-menu-browser
                     restaurant-id={restaurantId}
                     currency-code={currencyCode}
+                    cart-item-quantities={cartItemQuantities}
                     onadditem={handleAddItem}
+                    onadjustitemqty={handleAdjustItemQty}
                 ></c-pos-menu-browser>
             </div>
 
@@ -54,10 +56,9 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <c-pos-customer-input
-                            restaurant-id={restaurantId}
-                            oncustomerchange={handleCustomerChange}
-                        ></c-pos-customer-input>
+                        <div class="customer-action-row">
+                            <button type="button" class="action-btn secondary add-customer-btn" onclick={openCustomerModal}>Add Customer</button>
+                        </div>
                     </template>
                 </div>
 
@@ -81,8 +82,8 @@
                                 <circle cx="34" cy="38" r="3"/>
                                 <path d="M26 16v8M22 20h8" stroke-dasharray="3 3" stroke="#94a3b8"/>
                             </svg>
-                            <p>No items in this order yet</p>
-                            <small>Tap menu items to add them to the cart</small>
+                            <p>No items in cart yet</p>
+                            <small>Open Menu tab and tap an item to get started.</small>
                         </div>
                     </template>
                 </div>
@@ -121,19 +122,39 @@
                             Generate Bill
                         </button>
                     </div>
+                    <template lwc:if={showGenerateBillHint}>
+                        <div class="generate-bill-hint">{generateBillBlockReason}</div>
+                    </template>
                 </div>
 
                 <!-- Cancel Confirmation Modal -->
                 <template lwc:if={showCancelConfirm}>
                     <div class="modal-overlay" onclick={handleCloseCancelConfirm}>
-                        <div class="modal-card" onclick={stopPropagation}>
+                        <div class="modal-card" role="dialog" aria-modal="true" aria-label="Cancel order confirmation" onclick={stopPropagation}>
                             <h3 class="modal-title">Cancel Order?</h3>
                             <div class="modal-body">
                                 <p class="confirm-text">Are you sure you want to cancel this order? This action cannot be undone.</p>
                             </div>
                             <div class="modal-actions">
                                 <button class="action-btn secondary" onclick={handleCloseCancelConfirm}>Go Back</button>
-                                <button class="action-btn danger" onclick={handleCancelOrder}>Yes, Cancel</button>
+                                <button class="action-btn danger cancel-confirm-primary" onclick={handleCancelOrder}>Yes, Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={showCustomerModal}>
+                    <div class="modal-overlay" onclick={closeCustomerModal}>
+                        <div class="modal-card" role="dialog" aria-modal="true" aria-label="Add customer details" onclick={stopPropagation}>
+                            <h3 class="modal-title">Add Customer</h3>
+                            <div class="modal-body">
+                                <c-pos-customer-input
+                                    restaurant-id={restaurantId}
+                                    oncustomerchange={handleCustomerChange}
+                                ></c-pos-customer-input>
+                            </div>
+                            <div class="modal-actions">
+                                <button class="action-btn secondary" onclick={closeCustomerModal}>Close</button>
                             </div>
                         </div>
                     </div>

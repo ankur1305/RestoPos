@@ -15,6 +15,7 @@ export default class RestoPosApp extends LightningElement {
     @track managerPinError = '';
     isLoading = false;
     shouldFocusManagerPin = false;
+    managerModalKeyHandlerAttached = false;
 
     get isLoginView() { return this.currentView === 'login'; }
     get isTableView() { return this.currentView === 'tables'; }
@@ -109,6 +110,7 @@ export default class RestoPosApp extends LightningElement {
         this.managerPinError = '';
         this.showManagerPinModal = true;
         this.shouldFocusManagerPin = true;
+        this.attachManagerModalKeyHandler();
     }
 
     handleManagerPinInput(event) {
@@ -156,6 +158,7 @@ export default class RestoPosApp extends LightningElement {
         this.managerPin = '';
         this.managerPinError = '';
         this.shouldFocusManagerPin = false;
+        this.detachManagerModalKeyHandler();
     }
 
     handleManagerPinKeyup(event) {
@@ -174,6 +177,33 @@ export default class RestoPosApp extends LightningElement {
         event.stopPropagation();
     }
 
+    attachManagerModalKeyHandler() {
+        if (this.managerModalKeyHandlerAttached) {
+            return;
+        }
+        this._managerModalKeyHandler = (event) => {
+            if (!this.showManagerPinModal) {
+                return;
+            }
+            if (event.key === 'Escape') {
+                this.closeManagerPinModal();
+            } else if (event.key === 'Enter') {
+                this.submitManagerPin();
+            }
+        };
+        window.addEventListener('keydown', this._managerModalKeyHandler);
+        this.managerModalKeyHandlerAttached = true;
+    }
+
+    detachManagerModalKeyHandler() {
+        if (!this.managerModalKeyHandlerAttached) {
+            return;
+        }
+        window.removeEventListener('keydown', this._managerModalKeyHandler);
+        this._managerModalKeyHandler = null;
+        this.managerModalKeyHandlerAttached = false;
+    }
+
     renderedCallback() {
         if (!this.showManagerPinModal || !this.shouldFocusManagerPin) {
             return;
@@ -183,5 +213,9 @@ export default class RestoPosApp extends LightningElement {
             managerPinInput.focus();
             this.shouldFocusManagerPin = false;
         }
+    }
+
+    disconnectedCallback() {
+        this.detachManagerModalKeyHandler();
     }
 }
