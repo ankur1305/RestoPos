@@ -9,7 +9,20 @@ const SEARCH_DEBOUNCE_MS = 280;
 export default class PosMenuBrowser extends LightningElement {
     @api restaurantId;
     @api currencyCode;
-    @api cartItemQuantities = {};
+
+    _cartItemQuantities = {};
+
+    @api
+    get cartItemQuantities() {
+        return this._cartItemQuantities;
+    }
+    set cartItemQuantities(value) {
+        this._cartItemQuantities = value || {};
+        if (this.allItems && this.allItems.length > 0) {
+            this.decoratedItems = this.decorateItems(this.allItems);
+        }
+    }
+
     @track categories = [];
     @track allItems = [];
     @track decoratedItems = [];

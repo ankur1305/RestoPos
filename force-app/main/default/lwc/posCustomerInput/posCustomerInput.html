@@ -17,10 +17,6 @@
                         maxlength="10"
                     />
                 </div>
-                <label class="skip-checkbox">
-                    <input type="checkbox" checked={skipPhone} onchange={handleSkipPhoneChange} />
-                    <span>Skip</span>
-                </label>
             </div>
 
             <template lwc:if={isSearching}>
@@ -47,10 +43,6 @@
                         value={customerName}
                         oninput={handleNameChange}
                     />
-                    <label class="skip-checkbox">
-                        <input type="checkbox" checked={skipName} onchange={handleSkipNameChange} />
-                        <span>Skip</span>
-                    </label>
                     <button type="button" class="save-btn" onclick={handleCreateCustomer} disabled={isCreateDisabled}>Save</button>
                 </div>
             </template>

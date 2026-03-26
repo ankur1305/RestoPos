@@ -197,6 +197,12 @@ public without sharing class OrderController {
     }
 
     @AuraEnabled
+    public static void unlinkCustomerFromOrder(String orderId) {
+        POS_Order__c ord = new POS_Order__c(Id = orderId, Customer__c = null);
+        update ord;
+    }
+
+    @AuraEnabled
     public static void updateOrderPaymentDetails(String orderId, String paymentMethod, String paymentStatus) {
         if (String.isBlank(orderId)) {
             throw new AuraHandledException('Order id is required.');

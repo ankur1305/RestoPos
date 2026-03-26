@@ -46,6 +46,7 @@
                             <div class="customer-linked">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
                                 <span class="customer-linked-name">{customerName}</span>
+                                <button type="button" class="remove-customer-btn" onclick={handleRemoveCustomer} aria-label="Remove customer">&times;</button>
                             </div>
                             <template lwc:if={customerPhoneDisplay}>
                                 <div class="customer-phone-line">
@@ -57,7 +58,11 @@
                     </template>
                     <template lwc:else>
                         <div class="customer-action-row">
-                            <button type="button" class="action-btn secondary add-customer-btn" onclick={openCustomerModal}>Add Customer</button>
+                            <button type="button" class="action-btn secondary add-customer-btn" onclick={openCustomerModal} disabled={skipCustomer}>Add Customer</button>
+                            <label class="skip-customer-label">
+                                <input type="checkbox" checked={skipCustomer} onchange={handleSkipCustomerChange} />
+                                <span>Skip</span>
+                            </label>
                         </div>
                     </template>
                 </div>
