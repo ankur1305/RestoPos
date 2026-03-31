@@ -7,7 +7,7 @@
             <button class="mobile-tab back-tab" onclick={handleBack}>Tables</button>
         </div>
         <template lwc:if={inlineToastMessage}>
-            <div class={inlineToastClass}>
+            <div class={inlineToastClass} role="status" aria-live="polite">
                 <span>{inlineToastMessage}</span>
                 <button type="button" class="inline-toast-close" onclick={dismissInlineToast} aria-label="Dismiss message">&times;</button>
             </div>
@@ -67,6 +67,20 @@
                     </template>
                 </div>
 
+                <div class="order-notes-section">
+                    <label class="notes-label" for="order-notes">Order Notes</label>
+                    <textarea
+                        id="order-notes"
+                        class="notes-textarea"
+                        placeholder="e.g., no onions, birthday table, allergy info…"
+                        value={orderNotes}
+                        onchange={handleNotesChange}
+                        oninput={handleNotesChange}
+                        maxlength="500"
+                        rows="2"
+                    ></textarea>
+                </div>
+
                 <div class="order-items-list">
                     <template lwc:if={hasItems}>
                         <template for:each={orderItems} for:item="item">
@@ -85,7 +99,7 @@
                                 <path d="M6 6h6l4 24h18l4-16H14"/>
                                 <circle cx="18" cy="38" r="3"/>
                                 <circle cx="34" cy="38" r="3"/>
-                                <path d="M26 16v8M22 20h8" stroke-dasharray="3 3" stroke="#94a3b8"/>
+                                <path d="M26 16v8M22 20h8" stroke-dasharray="3 3" stroke="#6b7280"/>
                             </svg>
                             <p>No items in cart yet</p>
                             <small>Open Menu tab and tap an item to get started.</small>

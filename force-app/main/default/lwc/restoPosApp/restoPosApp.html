@@ -18,10 +18,10 @@
         </template>
 
         <template lwc:if={error}>
-            <div class="error-banner" onclick={handleDismissError}>
+            <div class="error-banner" role="alert">
                 <lightning-icon icon-name="utility:error" variant="inverse" size="x-small"></lightning-icon>
                 <span class="error-text">{error}</span>
-                <span class="error-dismiss">✕</span>
+                <button type="button" class="error-dismiss" onclick={handleDismissError} aria-label="Dismiss error">✕</button>
             </div>
         </template>
 
@@ -81,7 +81,7 @@
                         message-when-too-long="Manager PIN must be exactly 6 digits."
                     ></lightning-input>
                     <template lwc:if={managerPinError}>
-                        <div class="manager-pin-error">{managerPinError}</div>
+                        <div class="manager-pin-error" role="alert">{managerPinError}</div>
                     </template>
                     <div class="manager-pin-actions">
                         <button type="button" class="manager-pin-btn manager-pin-cancel" onclick={closeManagerPinModal}>Cancel</button>
@@ -90,5 +90,7 @@
                 </div>
             </div>
         </template>
+
+        <c-pos-help-fab></c-pos-help-fab>
     </div>
 </template>

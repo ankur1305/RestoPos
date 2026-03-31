@@ -48,7 +48,7 @@ public without sharing class TableController {
 
     @AuraEnabled
     public static List<Restaurant_Table__c> getManagerTables(String restaurantId) {
-        ensureReadable(Restaurant_Table__c.SObjectType.getDescribe(), 'Restaurant tables');
+        PermissionUtils.ensureReadable(Restaurant_Table__c.SObjectType.getDescribe(), 'Restaurant tables');
         return getTables(restaurantId);
     }
 
@@ -61,7 +61,7 @@ public without sharing class TableController {
         Integer sortOrder,
         String status
     ) {
-        ensureCreateOrUpdate(tableId, Restaurant_Table__c.SObjectType.getDescribe(), 'table');
+        PermissionUtils.ensureCreateOrUpdate(tableId, Restaurant_Table__c.SObjectType.getDescribe(), 'table');
         Restaurant_Table__c recordToSave;
         if (String.isBlank(tableId)) {
             recordToSave = new Restaurant_Table__c();
@@ -93,8 +93,8 @@ public without sharing class TableController {
 
     @AuraEnabled
     public static void transferCurrentOrder(String sourceTableId, String targetTableId) {
-        ensureUpdatable(Restaurant_Table__c.SObjectType.getDescribe(), 'Restaurant tables');
-        ensureUpdatable(POS_Order__c.SObjectType.getDescribe(), 'Orders');
+        PermissionUtils.ensureUpdatable(Restaurant_Table__c.SObjectType.getDescribe(), 'Restaurant tables');
+        PermissionUtils.ensureUpdatable(POS_Order__c.SObjectType.getDescribe(), 'Orders');
         Restaurant_Table__c sourceTable = [
             SELECT Id, Current_Order__c, Restaurant__c
             FROM Restaurant_Table__c
@@ -124,37 +124,6 @@ public without sharing class TableController {
         };
     }
 
-    private static void ensureReadable(Schema.DescribeSObjectResult describeResult, String label) {
-        if (isGuestContext()) {
-            return;
-        }
-        if (!describeResult.isAccessible()) {
-            throw new AuraHandledException(label + ' are not readable for this user.');
-        }
-    }
-
-    private static void ensureUpdatable(Schema.DescribeSObjectResult describeResult, String label) {
-        if (isGuestContext()) {
-            return;
-        }
-        if (!describeResult.isUpdateable()) {
-            throw new AuraHandledException(label + ' are not updateable for this user.');
-        }
-    }
-
-    private static void ensureCreateOrUpdate(String idValue, Schema.DescribeSObjectResult describeResult, String label) {
-        if (isGuestContext()) {
-            return;
-        }
-        if (String.isBlank(idValue)) {
-            if (!describeResult.isCreateable()) {
-                throw new AuraHandledException('No create permission for ' + label + '.');
-            }
-        } else if (!describeResult.isUpdateable()) {
-            throw new AuraHandledException('No update permission for ' + label + '.');
-        }
-    }
-
     private static Boolean hasActiveOrder(Id orderId, String orderStatus) {
         if (orderId == null) {
             return false;
@@ -165,7 +134,4 @@ public without sharing class TableController {
             && normalizedStatus != 'Served';
     }
 
-    private static Boolean isGuestContext() {
-        return UserInfo.getUserType() == 'Guest';
-    }
 }

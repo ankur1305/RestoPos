@@ -3,7 +3,7 @@ import getTables from '@salesforce/apex/TableController.getTables';
 import occupyTable from '@salesforce/apex/TableController.occupyTable';
 import updateTableStatus from '@salesforce/apex/TableController.updateTableStatus';
 import createOrder from '@salesforce/apex/OrderController.createOrder';
-import { notify, extractErrorMessage } from 'c/posUtils';
+import { notify, extractErrorMessage, createFocusTrap } from 'c/posUtils';
 
 export default class PosTableView extends LightningElement {
     @api restaurantId;
@@ -62,10 +62,11 @@ export default class PosTableView extends LightningElement {
                 hasOrder: !!t.Current_Order__c,
                 orderName: t.Current_Order__r ? t.Current_Order__r.Name : '',
                 orderTotal: t.Current_Order__r ? t.Current_Order__r.Total_Amount__c : 0,
-                itemCount: t.Current_Order__r ? t.Current_Order__r.Item_Count__c : 0
+                itemCount: t.Current_Order__r ? t.Current_Order__r.Item_Count__c : 0,
+                ariaLabel: `${t.Name}, ${t.Status__c || 'Available'}, seats ${t.Capacity__c || 0}`
             }));
         } catch (err) {
-            console.error('Load tables error:', err);
+            notify(this, 'Error', extractErrorMessage(err, 'Failed to load tables.'), 'error');
         } finally {
             if (!silent) {
                 this.isLoading = false;
@@ -88,12 +89,27 @@ export default class PosTableView extends LightningElement {
         this.selectedTable = table;
         this.showActions = true;
         this.actionError = '';
+        this._attachFocusTrap();
     }
 
     handleCloseActions() {
         this.showActions = false;
         this.selectedTable = null;
         this.actionError = '';
+        this._detachFocusTrap();
+    }
+
+    _attachFocusTrap() {
+        if (this._focusTrapHandler) return;
+        this._focusTrapHandler = createFocusTrap(() => this.template.querySelector('.modal-card'));
+        window.addEventListener('keydown', this._focusTrapHandler);
+    }
+
+    _detachFocusTrap() {
+        if (this._focusTrapHandler) {
+            window.removeEventListener('keydown', this._focusTrapHandler);
+            this._focusTrapHandler = null;
+        }
     }
 
     stopPropagation(event) {
@@ -254,6 +270,7 @@ export default class PosTableView extends LightningElement {
         if (this._keyHandler) {
             window.removeEventListener('keydown', this._keyHandler);
         }
+        this._detachFocusTrap();
         this.stopAutoRefresh();
     }
 

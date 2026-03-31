@@ -23,7 +23,7 @@
     --color-surface-alt: #f1f5f9;
     --color-text: #0f172a;
     --color-text-secondary: #64748b;
-    --color-text-muted: #94a3b8;
+    --color-text-muted: #6b7280;
     --color-border: #e2e8f0;
     --color-border-light: #f1f5f9;
     --color-divider: #f1f5f9;
@@ -116,7 +116,6 @@
     padding: var(--space-3) var(--space-4);
     margin: var(--space-3) var(--space-5) 0;
     border-radius: var(--radius-sm);
-    cursor: pointer;
     font-size: var(--font-size-sm);
     animation: slideDown var(--transition-slow) both;
 }
@@ -128,6 +127,22 @@
 .error-dismiss {
     font-size: 1.1rem;
     opacity: 0.8;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    border-radius: var(--radius-sm);
+}
+
+.error-dismiss:hover {
+    opacity: 1;
+}
+
+.error-dismiss:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
 }
 
 @keyframes slideDown {

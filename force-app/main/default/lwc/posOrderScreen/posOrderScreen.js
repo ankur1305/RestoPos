@@ -9,7 +9,8 @@ import getOrderCartSnapshot from '@salesforce/apex/OrderController.getOrderCartS
 import updateOrderStatus from '@salesforce/apex/OrderController.updateOrderStatus';
 import linkCustomerToOrder from '@salesforce/apex/OrderController.linkCustomerToOrder';
 import unlinkCustomerFromOrder from '@salesforce/apex/OrderController.unlinkCustomerFromOrder';
-import { normalizeIndianPhone, notify, extractErrorMessage } from 'c/posUtils';
+import updateOrderNotes from '@salesforce/apex/OrderController.updateOrderNotes';
+import { normalizeIndianPhone, notify, extractErrorMessage, createFocusTrap } from 'c/posUtils';
 
 export default class PosOrderScreen extends LightningElement {
     @api restaurantId;
@@ -24,9 +25,11 @@ export default class PosOrderScreen extends LightningElement {
     @track inlineToastType = 'add';
     @track showCustomerModal = false;
     @track skipCustomer = false;
+    @track orderNotes = '';
     isLoading = false;
 
     _toastTimerId;
+    _notesSaveTimerId;
     shouldFocusCancelPrimary = false;
 
     _orderId;
@@ -58,8 +61,25 @@ export default class PosOrderScreen extends LightningElement {
         if (this._toastTimerId) {
             clearTimeout(this._toastTimerId);
         }
+        if (this._notesSaveTimerId) {
+            clearTimeout(this._notesSaveTimerId);
+        }
         if (this._keyHandler) {
             window.removeEventListener('keydown', this._keyHandler);
+        }
+        this._detachFocusTrap();
+    }
+
+    _attachFocusTrap() {
+        if (this._focusTrapHandler) return;
+        this._focusTrapHandler = createFocusTrap(() => this.template.querySelector('.modal-card'));
+        window.addEventListener('keydown', this._focusTrapHandler);
+    }
+
+    _detachFocusTrap() {
+        if (this._focusTrapHandler) {
+            window.removeEventListener('keydown', this._focusTrapHandler);
+            this._focusTrapHandler = null;
         }
     }
 
@@ -102,7 +122,7 @@ export default class PosOrderScreen extends LightningElement {
             this._orderId = this.order.Id;
             this.orderItems = [];
         } catch (err) {
-            console.error('Create order error:', err);
+            this.showToast('Error', extractErrorMessage(err, 'Failed to create order.'), 'error');
         } finally {
             this.isLoading = false;
         }
@@ -119,7 +139,7 @@ export default class PosOrderScreen extends LightningElement {
                 await this.loadOrder(this._orderId);
                 this.showCustomerModal = false;
             } catch (err) {
-                console.error('Link customer error:', err);
+                this.showToast('Error', extractErrorMessage(err, 'Failed to link customer.'), 'error');
             }
         }
     }
@@ -134,16 +154,38 @@ export default class PosOrderScreen extends LightningElement {
             await unlinkCustomerFromOrder({ orderId: this._orderId });
             await this.loadOrder(this._orderId);
         } catch (err) {
-            console.error('Unlink customer error:', err);
+            this.showToast('Error', extractErrorMessage(err, 'Failed to unlink customer.'), 'error');
+        }
+    }
+
+    handleNotesChange(event) {
+        this.orderNotes = event.target.value;
+        if (this._notesSaveTimerId) {
+            clearTimeout(this._notesSaveTimerId);
+        }
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._notesSaveTimerId = setTimeout(() => {
+            this.saveOrderNotes();
+        }, 800);
+    }
+
+    async saveOrderNotes() {
+        if (!this._orderId) return;
+        try {
+            await updateOrderNotes({ orderId: this._orderId, notes: this.orderNotes });
+        } catch (err) {
+            this.showToast('Error', extractErrorMessage(err, 'Failed to save notes.'), 'error');
         }
     }
 
     openCustomerModal() {
         this.showCustomerModal = true;
+        this._attachFocusTrap();
     }
 
     closeCustomerModal() {
         this.showCustomerModal = false;
+        this._detachFocusTrap();
     }
 
     async loadOrder(orderId) {
@@ -151,8 +193,9 @@ export default class PosOrderScreen extends LightningElement {
             this.isLoading = true;
             this.order = await getOrder({ orderId });
             this.orderItems = this.order.Order_Items__r || [];
+            this.orderNotes = this.order.Notes__c || '';
         } catch (err) {
-            console.error('Load order error:', err);
+            this.showToast('Error', extractErrorMessage(err, 'Failed to load order.'), 'error');
         } finally {
             this.isLoading = false;
         }
@@ -202,7 +245,7 @@ export default class PosOrderScreen extends LightningElement {
             await this.refreshCartOnly();
             this.showInlineToast('Item removed', 'remove');
         } catch (err) {
-            console.error('Remove item error:', err);
+            this.showToast('Error', extractErrorMessage(err, 'Failed to remove item.'), 'error');
         }
     }
 
@@ -221,7 +264,7 @@ export default class PosOrderScreen extends LightningElement {
             });
             await this.refreshCartOnly();
         } catch (err) {
-            console.error('Update quantity error:', err);
+            this.showToast('Error', extractErrorMessage(err, 'Failed to update quantity.'), 'error');
         }
     }
 
@@ -259,7 +302,6 @@ export default class PosOrderScreen extends LightningElement {
                 detail: { receiptId: receipt.Id }
             }));
         } catch (err) {
-            console.error('Generate bill error:', err);
             this.showToast('Error', extractErrorMessage(err, 'Failed to generate bill.'), 'error');
         } finally {
             this.isLoading = false;
@@ -269,11 +311,13 @@ export default class PosOrderScreen extends LightningElement {
     handleShowCancelConfirm() {
         this.showCancelConfirm = true;
         this.shouldFocusCancelPrimary = true;
+        this._attachFocusTrap();
     }
 
     handleCloseCancelConfirm() {
         this.showCancelConfirm = false;
         this.shouldFocusCancelPrimary = false;
+        this._detachFocusTrap();
     }
 
     stopPropagation(event) {
@@ -286,7 +330,7 @@ export default class PosOrderScreen extends LightningElement {
             await updateOrderStatus({ orderId: this._orderId, status: 'Cancelled' });
             this.dispatchEvent(new CustomEvent('backtotables'));
         } catch (err) {
-            console.error('Cancel order error:', err);
+            this.showToast('Error', extractErrorMessage(err, 'Failed to cancel order.'), 'error');
         } finally {
             this.isLoading = false;
             this.showCancelConfirm = false;

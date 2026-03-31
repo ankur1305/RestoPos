@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import searchByPhone from '@salesforce/apex/CustomerController.searchByPhone';
 import createCustomer from '@salesforce/apex/CustomerController.createCustomer';
-import { normalizeIndianPhone } from 'c/posUtils';
+import { normalizeIndianPhone, notify, extractErrorMessage } from 'c/posUtils';
 
 export default class PosCustomerInput extends LightningElement {
     @api restaurantId;
@@ -63,7 +63,7 @@ export default class PosCustomerInput extends LightningElement {
                 this.emitCustomerState(null);
             }
         } catch (err) {
-            console.error('Customer search error:', err);
+            notify(this, 'Error', extractErrorMessage(err, 'Customer search failed.'), 'error');
         } finally {
             this.isSearching = false;
         }
@@ -87,7 +87,7 @@ export default class PosCustomerInput extends LightningElement {
             this.showNewForm = false;
             this.emitCustomerState(this.customer.Id);
         } catch (err) {
-            console.error('Create customer error:', err);
+            notify(this, 'Error', extractErrorMessage(err, 'Failed to create customer.'), 'error');
         } finally {
             this.isSearching = false;
         }

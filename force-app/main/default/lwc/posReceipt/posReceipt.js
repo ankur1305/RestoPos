@@ -37,7 +37,6 @@ export default class PosReceipt extends LightningElement {
                 };
             }
         } catch (err) {
-            console.error('Receipt load error:', err);
             this.showToast('Error', 'Failed to load receipt data.', 'error');
         } finally {
             this.isLoading = false;
@@ -81,7 +80,6 @@ export default class PosReceipt extends LightningElement {
                 } catch (ignore) {
                     /* ignore */
                 }
-                console.error('Receipt download error:', error);
                 this.showToast('Error', extractErrorMessage(error, 'Could not generate the receipt PDF.'), 'error');
             })
             .finally(() => {
@@ -133,7 +131,6 @@ export default class PosReceipt extends LightningElement {
             await this.loadReceipt();
             this.showToast('Success', 'Payment details updated.', 'success');
         } catch (err) {
-            console.error('Payment update error:', err);
             this.showToast('Error', extractErrorMessage(err, 'Failed to update payment details.'), 'error');
         } finally {
             this.isSavingPayment = false;

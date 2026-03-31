@@ -1,0 +1,346 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="loading-bar">
+            <lightning-spinner size="small" alternative-text="Working"></lightning-spinner>
+        </div>
+    </template>
+    <div class="pad">
+        <div class="report-filters">
+            <div class="filter-field">
+                <lightning-combobox label="Date Preset" value={reportFilters.preset} options={reportPresetOptions} onchange={handleReportPresetChange}></lightning-combobox>
+            </div>
+            <div class="filter-field">
+                <lightning-input type="date" label="Start Date" name="startDate" value={reportFilters.startDate} onchange={handleFilterChange} disabled={isPresetManagedDates}></lightning-input>
+            </div>
+            <div class="filter-field">
+                <lightning-input type="date" label="End Date" name="endDate" value={reportFilters.endDate} onchange={handleFilterChange} disabled={isPresetManagedDates}></lightning-input>
+            </div>
+            <div class="filter-field">
+                <lightning-combobox label="Category" name="categoryId" value={reportFilters.categoryId} options={reportCategoryOptions} onchange={handleFilterChange}></lightning-combobox>
+            </div>
+            <div class="filter-field">
+                <lightning-combobox label="Payment Method" name="paymentMethod" value={reportFilters.paymentMethod} options={paymentMethodOptions} onchange={handleFilterChange}></lightning-combobox>
+            </div>
+            <div class="field-btn-align">
+                <button type="button" class="btn btn-primary" onclick={applyReportFilter}>Apply Filters</button>
+                <button type="button" class="btn btn-outline" onclick={refreshStatistics}>Refresh</button>
+                <button type="button" class="btn btn-outline" onclick={exportReportCsv}>Export Excel</button>
+            </div>
+        </div>
+        <div class="kpis">
+            <div class="kpi">
+                <span class="kpi-label">Orders</span>
+                <strong class="kpi-value">{reportData.summary.orderCount}</strong>
+                <small class="kpi-delta">vs prev {reportData.comparison.orderDeltaPercent}%</small>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Revenue</span>
+                <strong class="kpi-value">{reportData.summary.revenue}</strong>
+                <small class="kpi-delta">vs prev {reportData.comparison.revenueDeltaPercent}%</small>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Net Sales (excl. tax)</span>
+                <strong class="kpi-value">{reportData.summary.netSales}</strong>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Avg Order Value</span>
+                <strong class="kpi-value">{reportData.summary.avgOrderValue}</strong>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Tax</span>
+                <strong class="kpi-value">{reportData.summary.taxAmount}</strong>
+                <small class="kpi-delta">CGST {reportData.summary.cgstAmount} | SGST {reportData.summary.sgstAmount}</small>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Unpaid Served/Closed</span>
+                <strong class="kpi-value">{reportData.exceptions.unpaidOrderCount}</strong>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Cancellation Rate</span>
+                <strong class="kpi-value">{reportData.exceptions.cancellationRatePercent}%</strong>
+            </div>
+            <div class="kpi">
+                <span class="kpi-label">Sold Out Items</span>
+                <strong class="kpi-value">{reportData.exceptions.soldOutItemCount}</strong>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span>Hourly Trend</span>
+                </div>
+                <div class="section-card-body">
+                    <template lwc:if={reportData.hourlyTrend.length}>
+                        <div class="report-mini-list">
+                            <template for:each={pagedHourlyTrend} for:item="row">
+                                <div key={row.label} class="report-mini-row">
+                                    <span>{row.label}</span>
+                                    <span>{row.orderCount} orders</span>
+                                    <span>{row.revenue}</span>
+                                </div>
+                            </template>
+                        </div>
+                        <template lwc:if={showHourlyPagination}>
+                            <div class="pager">
+                                <button type="button" class="btn btn-outline" onclick={handleHourlyPrev} disabled={disableHourlyPrev}>Prev</button>
+                                <span class="pager-label">{hourlyTrendPageLabel}</span>
+                                <button type="button" class="btn btn-outline" onclick={handleHourlyNext} disabled={disableHourlyNext}>Next</button>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-inline">No hourly data in selected range.</div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span>Daily Trend</span>
+                </div>
+                <div class="section-card-body">
+                    <template lwc:if={reportData.dailyTrend.length}>
+                        <div class="report-mini-list">
+                            <template for:each={pagedDailyTrend} for:item="row">
+                                <div key={row.dateLabel} class="report-mini-row">
+                                    <span>{row.dateLabel}</span>
+                                    <span>{row.orderCount} orders</span>
+                                    <span>{row.revenue}</span>
+                                </div>
+                            </template>
+                        </div>
+                        <template lwc:if={showDailyPagination}>
+                            <div class="pager">
+                                <button type="button" class="btn btn-outline" onclick={handleDailyPrev} disabled={disableDailyPrev}>Prev</button>
+                                <span class="pager-label">{dailyTrendPageLabel}</span>
+                                <button type="button" class="btn btn-outline" onclick={handleDailyNext} disabled={disableDailyNext}>Next</button>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-inline">No daily trend data.</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span>Category Mix</span>
+                </div>
+                <div class="section-card-body">
+                    <template lwc:if={reportData.categoryMix.length}>
+                        <div class="report-mini-list">
+                            <template for:each={reportData.categoryMix} for:item="row">
+                                <div key={row.categoryName} class="report-mini-row">
+                                    <span class={row.categoryNameClass}>{row.categoryName}</span>
+                                    <span>{row.orderCount} orders</span>
+                                    <span>{row.revenue}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-inline">No category mix for selected filters.</div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span>Payment Mix</span>
+                </div>
+                <div class="section-card-body">
+                    <template lwc:if={reportData.paymentMix.length}>
+                        <div class="report-mini-list">
+                            <template for:each={reportData.paymentMix} for:item="row">
+                                <div key={row.paymentMethod} class="report-mini-row">
+                                    <span>{row.paymentMethod}</span>
+                                    <span>{row.orderCount} orders</span>
+                                    <span>{row.revenue}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-inline">No payment data for selected filters.</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div class="reports-grid">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span>Top Selling Items</span>
+                </div>
+                <div class="section-card-body">
+                    <template lwc:if={reportData.topItems.length}>
+                        <div class="top-items-list">
+                            <template for:each={reportData.topItems} for:item="row">
+                                <div key={row.itemName} class="top-item">
+                                    <span class="top-item-rank">{row.rank}</span>
+                                    <div class="top-item-info">
+                                        <div class="top-item-name">{row.itemName}</div>
+                                        <div class="top-item-stats">Qty: {row.quantity} &middot; Revenue: {row.revenue}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-inline">No sales data for selected dates.</div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span>Slow Moving Items</span>
+                </div>
+                <div class="section-card-body">
+                    <template lwc:if={reportData.slowItems.length}>
+                        <div class="top-items-list">
+                            <template for:each={reportData.slowItems} for:item="row">
+                                <div key={row.itemName} class="top-item">
+                                    <span class="top-item-rank">{row.rank}</span>
+                                    <div class="top-item-info">
+                                        <div class="top-item-name">{row.itemName}</div>
+                                        <div class="top-item-stats">Qty: {row.quantity} &middot; Revenue: {row.revenue}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-inline">No slow item data for selected range.</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-card-header">
+                <span>Order Details</span>
+            </div>
+            <div class="section-card-body">
+                <div class="order-table-filters">
+                    <div class="filter-field">
+                        <lightning-combobox
+                            label="Payment"
+                            name="paymentMethod"
+                            value={orderTableFilters.paymentMethod}
+                            options={orderDetailsPaymentFilterOptions}
+                            onchange={handleOrderTableFilterChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="filter-field">
+                        <lightning-combobox
+                            label="Status"
+                            name="status"
+                            value={orderTableFilters.status}
+                            options={orderDetailsStatusFilterOptions}
+                            onchange={handleOrderTableFilterChange}
+                        ></lightning-combobox>
+                    </div>
+                </div>
+                <template lwc:if={filteredOrderDetails.length}>
+                    <div class="orders-table-wrap">
+                        <div class="orders-table-head">
+                            <span>Order</span>
+                            <span>Date/Time</span>
+                            <span>Table</span>
+                            <span>Status</span>
+                            <span>Payment</span>
+                            <span>Items</span>
+                            <span>Total</span>
+                        </div>
+                        <div class="orders-table-body">
+                            <template for:each={pagedOrderDetails} for:item="row">
+                                <button key={row.orderId} type="button" class="orders-table-row" data-id={row.orderId} onclick={openOrderDetailsModal}>
+                                    <span>{row.orderName}</span>
+                                    <span>{row.orderDateTimeLabel}</span>
+                                    <span>{row.tableName}</span>
+                                    <span>{row.status}</span>
+                                    <span>{row.paymentMethod}</span>
+                                    <span>{row.itemCount}</span>
+                                    <span>{row.totalAmount}</span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <template lwc:if={showOrderPagination}>
+                        <div class="pager">
+                            <button type="button" class="btn btn-outline" onclick={handleOrderPrev} disabled={disableOrderPrev}>Prev</button>
+                            <span class="pager-label">{orderDetailsPageLabel}</span>
+                            <button type="button" class="btn btn-outline" onclick={handleOrderNext} disabled={disableOrderNext}>Next</button>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <div class="empty-inline">No order details available for selected filters.</div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ ORDER DETAILS MODAL ═══ -->
+    <template lwc:if={showOrderDetailsModal}>
+        <div class="modal-overlay" onclick={closeOrderDetailsModal} onkeydown={handleOrderDetailsModalKeydown}>
+            <div class="modal-card modal-card-xl" role="dialog" aria-modal="true" aria-label="Order details" onclick={stopPropagation}>
+                <div class="modal-header">
+                    <h3 class="modal-title">Order {selectedOrderDetail.orderName}</h3>
+                    <button type="button" class="modal-close" onclick={closeOrderDetailsModal} aria-label="Close order details modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="order-modal-grid">
+                        <div><strong>Status:</strong> {selectedOrderDetail.status}</div>
+                        <div><strong>Date/Time:</strong> {selectedOrderDetail.orderDateTimeLabel}</div>
+                        <div><strong>Table:</strong> {selectedOrderDetail.tableName}</div>
+                        <div><strong>Customer:</strong> {selectedOrderDetail.customerName}</div>
+                        <div><strong>Phone:</strong> {selectedOrderDetail.customerPhone}</div>
+                        <div><strong>Payment Method:</strong> {selectedOrderDetail.paymentMethod}</div>
+                        <div><strong>Payment Status:</strong> {selectedOrderDetail.paymentStatus}</div>
+                        <div><strong>Subtotal:</strong> {selectedOrderDetail.subtotal}</div>
+                        <div><strong>Discount:</strong> {selectedOrderDetail.discountAmount}</div>
+                        <div><strong>Tax:</strong> {selectedOrderDetail.taxAmount}</div>
+                        <div><strong>Total:</strong> {selectedOrderDetail.totalAmount}</div>
+                        <div><strong>Items:</strong> {selectedOrderDetail.itemCount}</div>
+                    </div>
+
+                    <template lwc:if={selectedOrderDetail.notes}>
+                        <div class="order-note"><strong>Order Notes:</strong> {selectedOrderDetail.notes}</div>
+                    </template>
+
+                    <div class="order-lines-table">
+                        <div class="order-lines-head">
+                            <span>Item</span>
+                            <span>Qty</span>
+                            <span>Unit Price</span>
+                            <span>Line Total</span>
+                            <span>Status</span>
+                            <span>Notes</span>
+                        </div>
+                        <div class="order-lines-body">
+                            <template for:each={selectedOrderDetail.lineItems} for:item="line">
+                                <div key={line.rowKey} class="order-lines-row">
+                                    <span>{line.itemName}</span>
+                                    <span>{line.quantity}</span>
+                                    <span>{line.unitPrice}</span>
+                                    <span>{line.lineTotal}</span>
+                                    <span>{line.status}</span>
+                                    <span>{line.notes}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick={closeOrderDetailsModal}>Close</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

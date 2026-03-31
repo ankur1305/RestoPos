@@ -191,6 +191,14 @@ public without sharing class OrderController {
     }
 
     @AuraEnabled
+    public static void updateOrderNotes(String orderId, String notes) {
+        if (String.isBlank(orderId)) {
+            throw new AuraHandledException('Order id is required.');
+        }
+        update new POS_Order__c(Id = orderId, Notes__c = notes);
+    }
+
+    @AuraEnabled
     public static void linkCustomerToOrder(String orderId, String customerId) {
         POS_Order__c ord = new POS_Order__c(Id = orderId, Customer__c = customerId);
         update ord;

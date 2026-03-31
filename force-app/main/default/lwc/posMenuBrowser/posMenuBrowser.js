@@ -2,6 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import getMenuCategories from '@salesforce/apex/MenuController.getMenuCategories';
 import getMenuItems from '@salesforce/apex/MenuController.getMenuItems';
 import searchMenuItems from '@salesforce/apex/MenuController.searchMenuItems';
+import { notify, extractErrorMessage } from 'c/posUtils';
 
 const ALL_CATEGORY_ID = 'ALL';
 const SEARCH_DEBOUNCE_MS = 280;
@@ -56,8 +57,7 @@ export default class PosMenuBrowser extends LightningElement {
             }
             await this.loadItems();
         } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Load menu data error:', err);
+            notify(this, 'Error', extractErrorMessage(err, 'Failed to load menu.'), 'error');
         } finally {
             this.isLoading = false;
         }
@@ -73,7 +73,7 @@ export default class PosMenuBrowser extends LightningElement {
             });
             this.decoratedItems = this.decorateItems(this.allItems);
         } catch (err) {
-            console.error('Load items error:', err);
+            notify(this, 'Error', extractErrorMessage(err, 'Failed to load items.'), 'error');
         } finally {
             this.isLoading = false;
         }
@@ -121,7 +121,7 @@ export default class PosMenuBrowser extends LightningElement {
             this.decoratedItems = this.decorateItems(this.allItems);
             this.selectedCategoryId = '';
         } catch (err) {
-            console.error('Search error:', err);
+            notify(this, 'Error', extractErrorMessage(err, 'Search failed.'), 'error');
         }
     }
 

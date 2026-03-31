@@ -40,8 +40,8 @@ public without sharing class MenuController {
 
     @AuraEnabled
     public static ManagerMenuData getManagerMenuData(String restaurantId) {
-        ensureReadable(Menu_Category__c.SObjectType.getDescribe(), 'Menu categories');
-        ensureReadable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
+        PermissionUtils.ensureReadable(Menu_Category__c.SObjectType.getDescribe(), 'Menu categories');
+        PermissionUtils.ensureReadable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
         ManagerMenuData data = new ManagerMenuData();
         data.categories = [
             SELECT Id, Name, Sort_Order__c, Icon__c, Is_Active__c
@@ -68,7 +68,7 @@ public without sharing class MenuController {
         String icon,
         Boolean isActive
     ) {
-        ensureCreateOrUpdate(categoryId, Menu_Category__c.SObjectType.getDescribe(), 'menu category');
+        PermissionUtils.ensureCreateOrUpdate(categoryId, Menu_Category__c.SObjectType.getDescribe(), 'menu category');
         Menu_Category__c recordToSave;
         if (String.isBlank(categoryId)) {
             recordToSave = new Menu_Category__c(Restaurant__c = restaurantId);
@@ -99,7 +99,7 @@ public without sharing class MenuController {
         Integer sortOrder,
         String imageUrl
     ) {
-        ensureCreateOrUpdate(itemId, Menu_Item__c.SObjectType.getDescribe(), 'menu item');
+        PermissionUtils.ensureCreateOrUpdate(itemId, Menu_Item__c.SObjectType.getDescribe(), 'menu item');
         Menu_Item__c recordToSave;
         if (String.isBlank(itemId)) {
             recordToSave = new Menu_Item__c(Restaurant__c = restaurantId);
@@ -123,17 +123,13 @@ public without sharing class MenuController {
 
     @AuraEnabled
     public static void deleteMenuItem(String menuItemId) {
-        if (!isGuestContext() && !Menu_Item__c.SObjectType.getDescribe().isDeletable()) {
-            throw new AuraHandledException('No delete permission for menu items.');
-        }
+        PermissionUtils.ensureDeletable(Menu_Item__c.SObjectType.getDescribe(), 'menu items');
         delete [SELECT Id FROM Menu_Item__c WHERE Id = :menuItemId LIMIT 1];
     }
 
     @AuraEnabled
     public static void deleteMenuCategory(String restaurantId, String categoryId) {
-        if (!isGuestContext() && !Menu_Category__c.SObjectType.getDescribe().isDeletable()) {
-            throw new AuraHandledException('No delete permission for menu categories.');
-        }
+        PermissionUtils.ensureDeletable(Menu_Category__c.SObjectType.getDescribe(), 'menu categories');
         Menu_Category__c category = [
             SELECT Id, Restaurant__c
             FROM Menu_Category__c
@@ -159,7 +155,7 @@ public without sharing class MenuController {
 
     @AuraEnabled
     public static Integer bulkUpdateAvailability(String restaurantId, List<String> itemIds, Boolean isAvailable) {
-        ensureUpdatable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
+        PermissionUtils.ensureUpdatable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
         List<Menu_Item__c> rows;
         if (itemIds == null || itemIds.isEmpty()) {
             rows = [SELECT Id FROM Menu_Item__c WHERE Restaurant__c = :restaurantId];
@@ -177,7 +173,7 @@ public without sharing class MenuController {
 
     @AuraEnabled
     public static Integer setCategoryAvailability(String restaurantId, String categoryId, Boolean isAvailable) {
-        ensureUpdatable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
+        PermissionUtils.ensureUpdatable(Menu_Item__c.SObjectType.getDescribe(), 'Menu items');
         List<Menu_Item__c> rows = [
             SELECT Id
             FROM Menu_Item__c
@@ -196,40 +192,5 @@ public without sharing class MenuController {
     public class ManagerMenuData {
         @AuraEnabled public List<Menu_Category__c> categories;
         @AuraEnabled public List<Menu_Item__c> items;
-    }
-
-    private static void ensureReadable(Schema.DescribeSObjectResult describeResult, String label) {
-        if (isGuestContext()) {
-            return;
-        }
-        if (!describeResult.isAccessible()) {
-            throw new AuraHandledException(label + ' are not readable for this user.');
-        }
-    }
-
-    private static void ensureUpdatable(Schema.DescribeSObjectResult describeResult, String label) {
-        if (isGuestContext()) {
-            return;
-        }
-        if (!describeResult.isUpdateable()) {
-            throw new AuraHandledException(label + ' are not updateable for this user.');
-        }
-    }
-
-    private static void ensureCreateOrUpdate(String idValue, Schema.DescribeSObjectResult describeResult, String label) {
-        if (isGuestContext()) {
-            return;
-        }
-        if (String.isBlank(idValue)) {
-            if (!describeResult.isCreateable()) {
-                throw new AuraHandledException('No create permission for ' + label + '.');
-            }
-        } else if (!describeResult.isUpdateable()) {
-            throw new AuraHandledException('No update permission for ' + label + '.');
-        }
-    }
-
-    private static Boolean isGuestContext() {
-        return UserInfo.getUserType() == 'Guest';
     }
 }

@@ -1,0 +1,94 @@
+<template>
+    <template lwc:if={isLoading}>
+        <div class="loading-bar">
+            <lightning-spinner size="small" alternative-text="Working"></lightning-spinner>
+        </div>
+    </template>
+    <div class="pad">
+        <div class="section-toolbar">
+            <h4 class="section-toolbar-title">All Tables</h4>
+            <button type="button" class="btn btn-primary btn-sm" onclick={openNewTable}>+ Add Table</button>
+        </div>
+
+        <div class="transfer-box">
+            <div class="transfer-field">
+                <lightning-combobox label="Source (active order)" options={occupiedTableOptions} value={transferSourceTableId} onchange={handleTransferSourceChange}></lightning-combobox>
+            </div>
+            <div class="transfer-field">
+                <lightning-combobox label="Target (available)" options={availableTableOptions} value={transferTargetTableId} onchange={handleTransferTargetChange}></lightning-combobox>
+            </div>
+            <div class="field-btn-align">
+                <button type="button" class="btn btn-primary" onclick={transferOrderFromSelectors}>Transfer Order</button>
+            </div>
+        </div>
+        <template lwc:if={transferError}>
+            <div class="inline-error" role="alert">
+                <span>{transferError}</span>
+                <button type="button" class="inline-error-close" data-target="transferError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+            </div>
+        </template>
+        <template lwc:if={tableActionError}>
+            <div class="inline-error" role="alert">
+                <span>{tableActionError}</span>
+                <button type="button" class="inline-error-close" data-target="tableActionError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+            </div>
+        </template>
+
+        <div class="list">
+            <template for:each={pagedTablesDisplay} for:item="table">
+                <div key={table.Id} class="list-item">
+                    <div class="list-item-info">
+                        <span class="item-number-badge">{table.tableNumber}</span>
+                        <span class="list-item-name">{table.Name}</span>
+                        <span class="status-badge">{table.Status__c}</span>
+                        <span class="list-item-meta">Cap {table.Capacity__c}</span>
+                    </div>
+                    <div class="list-item-actions">
+                        <button type="button" class="btn btn-sm btn-outline" data-id={table.Id} onclick={editTable}>Edit</button>
+                        <button type="button" class="btn btn-sm btn-subtle-success" data-id={table.Id} data-status="Reserved" onclick={updateTableStatus}>Reserve</button>
+                        <button type="button" class="btn btn-sm btn-subtle" data-id={table.Id} data-status="Available" onclick={updateTableStatus}>Available</button>
+                        <button type="button" class="btn btn-sm btn-subtle-danger" data-id={table.Id} data-status="Out of Service" onclick={updateTableStatus}>Out of Service</button>
+                    </div>
+                </div>
+            </template>
+            <template lwc:if={tables.length}></template>
+            <template lwc:else>
+                <div class="empty-inline">No tables yet. Click "+ Add Table" to create one.</div>
+            </template>
+        </div>
+        <template lwc:if={showTablesPagination}>
+            <div class="pager">
+                <button type="button" class="btn btn-outline" onclick={handleTablesPrev} disabled={disableTablesPrev}>Prev</button>
+                <span class="pager-label">{tablesPageLabel}</span>
+                <button type="button" class="btn btn-outline" onclick={handleTablesNext} disabled={disableTablesNext}>Next</button>
+            </div>
+        </template>
+    </div>
+
+    <!-- ═══ EDIT TABLE MODAL ═══ -->
+    <template lwc:if={showEditTableModal}>
+        <div class="modal-overlay" onclick={closeTableModal} onkeydown={handleTableModalKeydown}>
+            <div class="modal-card" role="dialog" aria-modal="true" aria-label="Edit table" onclick={stopPropagation}>
+                <div class="modal-header">
+                    <h3 class="modal-title">{editModalTitle}</h3>
+                    <button type="button" class="modal-close" onclick={closeTableModal} aria-label="Close table modal">&times;</button>
+                </div>
+                <div class="modal-body form-col">
+                    <template lwc:if={tableFormError}>
+                        <div class="inline-error" role="alert">
+                            <span>{tableFormError}</span>
+                            <button type="button" class="inline-error-close" data-target="tableFormError" onclick={clearInlineMessage} aria-label="Dismiss message">&times;</button>
+                        </div>
+                    </template>
+                    <lightning-input label="Name" name="Name" value={tableForm.Name} onchange={handleTableInput}></lightning-input>
+                    <lightning-input type="number" label="Capacity" name="Capacity__c" value={tableForm.Capacity__c} onchange={handleTableInput}></lightning-input>
+                    <lightning-combobox label="Status" name="Status__c" value={tableForm.Status__c} options={tableStatusOptions} onchange={handleTableInput}></lightning-combobox>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick={closeTableModal}>Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick={saveTable}>Save Table</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

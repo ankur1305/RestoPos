@@ -51,3 +51,33 @@ export function extractErrorMessage(error, fallback = 'Action failed') {
 export function notify(component, title, message, variant = 'info') {
     component.dispatchEvent(new ShowToastEvent({ title, message, variant }));
 }
+
+const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Returns a keydown handler that traps Tab focus inside the given container.
+ * Attach on modal open, remove on close.
+ * @param {Function} containerFn  - returns the modal container element (called each keydown)
+ */
+export function createFocusTrap(containerFn) {
+    return function handleKeydown(event) {
+        if (event.key !== 'Tab') return;
+        const container = containerFn();
+        if (!container) return;
+        const focusable = [...container.querySelectorAll(FOCUSABLE)];
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey) {
+            if (document.activeElement === first || container.contains(document.activeElement) === false) {
+                event.preventDefault();
+                last.focus();
+            }
+        } else {
+            if (document.activeElement === last || container.contains(document.activeElement) === false) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+    };
+}

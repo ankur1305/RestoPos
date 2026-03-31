@@ -17,7 +17,6 @@ export default class RestaurantSnapshot extends LightningElement {
             this.data = await getSnapshot({ restaurantId: this.recordId });
             this.hasError = false;
         } catch (err) {
-            console.error('Snapshot error:', err);
             this.hasError = true;
         } finally {
             this.isLoading = false;

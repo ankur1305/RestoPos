@@ -2,6 +2,7 @@ import { LightningElement, track } from 'lwc';
 import getRestaurantByCode from '@salesforce/apex/RestoPosController.getRestaurantByCode';
 import verifyPin from '@salesforce/apex/RestoPosController.verifyPin';
 import verifyManagerPin from '@salesforce/apex/RestoPosController.verifyManagerPin';
+import { createFocusTrap } from 'c/posUtils';
 
 export default class RestoPosApp extends LightningElement {
     @track currentView = 'login';
@@ -111,6 +112,7 @@ export default class RestoPosApp extends LightningElement {
         this.showManagerPinModal = true;
         this.shouldFocusManagerPin = true;
         this.attachManagerModalKeyHandler();
+        this._attachManagerFocusTrap();
     }
 
     handleManagerPinInput(event) {
@@ -159,6 +161,7 @@ export default class RestoPosApp extends LightningElement {
         this.managerPinError = '';
         this.shouldFocusManagerPin = false;
         this.detachManagerModalKeyHandler();
+        this._detachManagerFocusTrap();
     }
 
     handleManagerPinKeyup(event) {
@@ -215,7 +218,21 @@ export default class RestoPosApp extends LightningElement {
         }
     }
 
+    _attachManagerFocusTrap() {
+        if (this._managerFocusTrapHandler) return;
+        this._managerFocusTrapHandler = createFocusTrap(() => this.template.querySelector('.manager-pin-modal'));
+        window.addEventListener('keydown', this._managerFocusTrapHandler);
+    }
+
+    _detachManagerFocusTrap() {
+        if (this._managerFocusTrapHandler) {
+            window.removeEventListener('keydown', this._managerFocusTrapHandler);
+            this._managerFocusTrapHandler = null;
+        }
+    }
+
     disconnectedCallback() {
         this.detachManagerModalKeyHandler();
+        this._detachManagerFocusTrap();
     }
 }
